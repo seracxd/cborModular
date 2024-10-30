@@ -1,5 +1,4 @@
-﻿using cborModular.Application;
-using cborModular.Domain;
+﻿using cborModular.Domain;
 using cborModular.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Plugin.BLE.Abstractions.Contracts;
@@ -20,11 +19,8 @@ namespace cborModular
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
-            builder.Services.AddSingleton<IMotorcycleService, MotorcycleService>();
             builder.Services.AddSingleton<IMotorcycleRepository, MotorcycleRepository>();
-            builder.Services.AddSingleton<IBluetoothClient, BluetoothClient>();
-
-            builder.Services.AddSingleton<IAdapter>(CrossBluetoothLE.Current.Adapter);
+     
             builder.Services.AddTransient<MainPage>();
 
 #if DEBUG
