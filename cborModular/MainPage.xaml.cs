@@ -11,20 +11,21 @@ namespace cborModular
         {
             InitializeComponent();
 
+            // funkce pro simulaci bluetooth
             var bluetoothSimulator = new BluetoothSimulator();
             var dataProcessor = new DataProcessor(bluetoothSimulator);
 
-            // Initialize storage dictionary
-            //  var dataStorage = new Dictionary<DataIdentifier, List<object>>();
-
+            // manuální přidání dat
             DataStorage.AddData(DataIdentifier.Rychlost, 15.5f);
-          
-
-
+            
+            // přidání požadovaných parametrů do bluetooth requestu
             DataStorage.AddRequest([DataIdentifier.Rychlost, DataIdentifier.Plyn]);
-        
-            // Send request and store response
+            // můžu přidávat na několikrát, ochrana proti duplikátům
+            DataStorage.AddRequest([DataIdentifier.Rychlost, DataIdentifier.PrumernaRychlost, DataIdentifier.RucniBrzda]);
+
+            // simulace bluetooth, vynulování requestu
             dataProcessor.SendRequestAndStoreResponse();
+
 
             var requestedIdentifiers = new List<DataIdentifier>
             {
@@ -34,11 +35,12 @@ namespace cborModular
              DataIdentifier.SvetelnaUroven,
              DataIdentifier.Prevod
             };
+            // můžu vložit List
             DataStorage.AddRequest(requestedIdentifiers.ToArray());
 
             dataProcessor.SendRequestAndStoreResponse();
 
-
+            // zobrazení vybraných dat
             SpeedLabel.Text = $"Speed: {DataStorage.GetLastValue(DataIdentifier.Rychlost)} km/h";
             ThrottleLabel.Text = $"Throttle: {DataStorage.GetLastValue(DataIdentifier.Plyn)}%";
         }

@@ -100,16 +100,6 @@ namespace cborModular.Services
             }
 
             return CborHandler.EncodeResponse(responseData);
-        }
-
-        /// <summary>
-        /// Adds data to the simulator's storage.
-        /// </summary>
-        /// <param name="identifier">The DataIdentifier key</param>
-        /// <param name="value">The value to store</param>
-        public void AddData(DataIdentifier identifier, object value)
-        {
-            dataStorage[identifier] = value;
-        }
+        }  
     }
 }
