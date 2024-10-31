@@ -5,7 +5,7 @@ VisualStudioVersion = 17.11.35312.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cborModular", "cborModular\cborModular.csproj", "{8F2EA5B4-6B3D-45FF-8493-ACC8F20FE08B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cborModular.Tests", "cborModular.Tests\cborModular.Tests.csproj", "{D18DFCEE-BD1B-4B60-8416-29ADE9DE5375}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cborModular.Tests", "cborModular.Tests\cborModular.Tests.csproj", "{D18DFCEE-BD1B-4B60-8416-29ADE9DE5375}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

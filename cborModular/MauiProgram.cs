@@ -1,6 +1,4 @@
-﻿using cborModular.Domain;
-using cborModular.Infrastructure;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE;
 
@@ -18,8 +16,6 @@ namespace cborModular
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
-
-            builder.Services.AddSingleton<IMotorcycleRepository, MotorcycleRepository>();
      
             builder.Services.AddTransient<MainPage>();
 
