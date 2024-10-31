@@ -104,6 +104,8 @@ namespace cborModular.DataModels
         [DataType(typeof(ushort))] MaxRychlost = 79,
         /// <summary>Ruční brzda (bool)</summary>
         [DataType(typeof(bool))] RucniBrzda = 80,
+        /// <summary>Demo režim motorky (bool)</summary>
+        [DataType(typeof(bool))] DemoRezim = 81,
 
         // bezpecnostni funkce (safety features)
         /// <summary>Imobilizér (bool)</summary>
@@ -114,7 +116,7 @@ namespace cborModular.DataModels
         [DataType(typeof(ushort))] Geofencing = 92,
 
         // notifikace (notifications)
-        /// <summary>Notifikace (object)</summary>
-        [DataType(typeof(object))] Notifikace = 100 // Placeholder
+        /// <summary>aktivní stav motorky (bool)</summary>
+        [DataType(typeof(bool))] Aktivni = 100 // Placeholder
     }
 }

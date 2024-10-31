@@ -14,19 +14,21 @@ namespace cborModular.Services
 
         /// <summary>
         /// Encodes a list of DataIdentifiers as a CBOR array.
-        /// </summary>
-        /// <param name="identifiers">List of DataIdentifiers to encode</param>
+        /// </summary>     
         /// <returns>CBOR-encoded byte array</returns>
-        public static byte[] EncodeRequest(List<DataIdentifier> identifiers)
+        public static byte[] EncodeRequest()
         {
             var writer = new CborWriter();
 
-            writer.WriteStartArray(identifiers.Count);
-            foreach (var identifier in identifiers)
+            writer.WriteStartArray(DataStorage.GetRequestedIdentifiers().Count);
+            foreach (var identifier in DataStorage.GetRequestedIdentifiers())
             {
                 writer.WriteInt32((int)identifier);
             }
             writer.WriteEndArray();
+
+            // TODO: bude se muset řešit uložení requestu do přečtení dat z bluetooth.
+            DataStorage.ClearRequest();
             return writer.Encode();
 
         }

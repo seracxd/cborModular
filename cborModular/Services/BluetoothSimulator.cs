@@ -66,6 +66,7 @@ namespace cborModular.Services
             dataStorage[DataIdentifier.RezimJizdy] = 1;                    // Placeholder for enum
             dataStorage[DataIdentifier.MaxRychlost] = (ushort)150;         // ushort
             dataStorage[DataIdentifier.RucniBrzda] = true;                 // bool
+            dataStorage[DataIdentifier.DemoRezim] = false;                 // bool
 
             // Safety features identifiers
             dataStorage[DataIdentifier.Imobilizer] = true;                 // bool
@@ -73,7 +74,7 @@ namespace cborModular.Services
             dataStorage[DataIdentifier.Geofencing] = (ushort)1;            // ushort
 
             // Notifications identifier (placeholder object)
-            dataStorage[DataIdentifier.Notifikace] = new object();         // Placeholder
+            dataStorage[DataIdentifier.Aktivni] =true;         // bool
         }
 
         /// <summary>

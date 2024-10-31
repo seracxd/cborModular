@@ -19,11 +19,10 @@ namespace cborModular.Services
         /// <summary>
         /// Sends a request for the specified identifiers, receives the response, decodes it, and stores it in the provided dictionary.
         /// </summary>
-        /// <param name="requestedIdentifiers">List of DataIdentifiers to request</param>
-        public void SendRequestAndStoreResponse(List<DataIdentifier> requestedIdentifiers)
+        public void SendRequestAndStoreResponse()
         {
             // Step 1: Encode the request into CBOR format
-            byte[] cborRequest = CborHandler.EncodeRequest(requestedIdentifiers);
+            byte[] cborRequest = CborHandler.EncodeRequest();
 
             // Step 2: Send the request to the Bluetooth simulator and get the CBOR response
             byte[] cborResponse = _bluetoothSimulator.ProcessBluetoothRequest(cborRequest);

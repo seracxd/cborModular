@@ -11,6 +11,8 @@ namespace cborModular.DataModels
     public static class DataStorage
     {
         private static readonly Dictionary<DataIdentifier, List<object>> dataStorage = new Dictionary<DataIdentifier, List<object>>();
+        private static readonly List<DataIdentifier> requestedIdentifiers = new List<DataIdentifier>();
+
 
         public static void AddData(DataIdentifier identifier, object value)
         {
@@ -36,6 +38,36 @@ namespace cborModular.DataModels
             }
             throw new InvalidOperationException("Data not found for the specified identifier.");
         }
+
+        /// <summary>
+        /// Adds a variable number of DataIdentifiers to the request list in DataStorage.
+        /// </summary>
+        /// <param name="identifiers">A variable number of DataIdentifier values</param>
+        public static void AddRequest(params DataIdentifier[] identifiers)
+        {
+            foreach (var identifier in identifiers)
+            {
+                if (!requestedIdentifiers.Contains(identifier))
+                {
+                    requestedIdentifiers.Add(identifier);
+                }
+            }
+        }
+        /// <summary>
+        /// Gets all requested identifiers.
+        /// </summary>
+        /// <returns>A read-only collection of the requested identifiers.</returns>
+        public static IReadOnlyCollection<DataIdentifier> GetRequestedIdentifiers()
+        {
+            return requestedIdentifiers.AsReadOnly();
+        }
+
+        public static void ClearRequest()
+        {
+            requestedIdentifiers.Clear();
+        }
+
+
         private static Type GetExpectedType(DataIdentifier identifier)
         {
             var memberInfo = typeof(DataIdentifier).GetMember(identifier.ToString())[0];

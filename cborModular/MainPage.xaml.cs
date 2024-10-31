@@ -18,31 +18,25 @@ namespace cborModular
             //  var dataStorage = new Dictionary<DataIdentifier, List<object>>();
 
             DataStorage.AddData(DataIdentifier.Rychlost, 15.5f);
+          
 
-            // List of data identifiers you want to request
+
+            DataStorage.AddRequest([DataIdentifier.Rychlost, DataIdentifier.Plyn]);
+        
+            // Send request and store response
+            dataProcessor.SendRequestAndStoreResponse();
+
             var requestedIdentifiers = new List<DataIdentifier>
             {
              DataIdentifier.Rychlost,
              DataIdentifier.Pretizeni,
              DataIdentifier.OtackyMotoru,
-             DataIdentifier.NouzovaSvetla,
-             DataIdentifier.Pretizeni,
-             DataIdentifier.RegenerativniBrzdeni
-            };
-
-            // Send request and store response
-            dataProcessor.SendRequestAndStoreResponse(requestedIdentifiers);
-
-            requestedIdentifiers = new List<DataIdentifier>
-            {
-             DataIdentifier.Rychlost,
-             DataIdentifier.Pretizeni,
-             DataIdentifier.OtackyMotoru,
              DataIdentifier.SvetelnaUroven,
-             DataIdentifier.Plyn
+             DataIdentifier.Prevod
             };
+            DataStorage.AddRequest(requestedIdentifiers.ToArray());
 
-            dataProcessor.SendRequestAndStoreResponse(requestedIdentifiers);
+            dataProcessor.SendRequestAndStoreResponse();
 
 
             SpeedLabel.Text = $"Speed: {DataStorage.GetLastValue(DataIdentifier.Rychlost)} km/h";
