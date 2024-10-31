@@ -27,13 +27,14 @@ namespace cborModular.DataModels
             dataStorage[identifier].Add(value);
         }
 
-        public static T GetData<T>(DataIdentifier identifier)
+        public static object GetLastValue(DataIdentifier identifier)
         {
-            if (dataStorage.ContainsKey(identifier) && dataStorage[identifier] is T value)
+            if (dataStorage.ContainsKey(identifier) && dataStorage[identifier].Count > 0)
             {
-                return value;
+                // Get the last value in the list for the specified identifier
+                return dataStorage[identifier][^1]; // ^1 is the index from the end, accessing the last element
             }
-            throw new InvalidOperationException("Data not found or invalid type.");
+            throw new InvalidOperationException("Data not found for the specified identifier.");
         }
         private static Type GetExpectedType(DataIdentifier identifier)
         {

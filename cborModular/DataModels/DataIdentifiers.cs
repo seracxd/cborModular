@@ -30,6 +30,8 @@ namespace cborModular.DataModels
         [DataType(typeof(ushort))] VykonMotoru = 11,
         /// <summary>Teplota motoru (float)</summary>
         [DataType(typeof(float))] TeplotaMotoru = 12,
+        /// <summary>hodnota plynu v % (float)</summary>
+        [DataType(typeof(float))] Plyn = 12,
         /// <summary>Převod (sbyte)</summary>
         [DataType(typeof(sbyte))] Prevod = 15,
 
@@ -95,7 +97,7 @@ namespace cborModular.DataModels
         /// <summary>Brzdový výkon (bool)</summary>
         [DataType(typeof(bool))] BrzdovyVykon = 76,
         /// <summary>Traction control (Enum)</summary>
-        [DataType(typeof(bool))] Tracke = 77,
+        [DataType(typeof(bool))] Trakce = 77,
         /// <summary>Režim jízdy (Enum)</summary>
         [DataType(typeof(string))] RezimJizdy = 78,
         /// <summary>Maximální rychlost (ushort)</summary>

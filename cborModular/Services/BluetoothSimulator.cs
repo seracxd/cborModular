@@ -26,6 +26,7 @@ namespace cborModular.Services
             dataStorage[DataIdentifier.VykonMotoru] = (ushort)150;    // ushort
             dataStorage[DataIdentifier.TeplotaMotoru] = 85.0f;        // float
             dataStorage[DataIdentifier.Prevod] = (sbyte)3;            // sbyte
+            dataStorage[DataIdentifier.Plyn] = 65.0f;
 
             // Battery-related identifiers
             dataStorage[DataIdentifier.UrovenBaterie] = (byte)75;          // byte
@@ -61,7 +62,7 @@ namespace cborModular.Services
             dataStorage[DataIdentifier.NouzovaSvetla] = false;             // bool
             dataStorage[DataIdentifier.ABS] = true;                        // bool
             dataStorage[DataIdentifier.BrzdovyVykon] = false;              // bool
-            dataStorage[DataIdentifier.Tracke] = 0;                        // Placeholder for enum
+            dataStorage[DataIdentifier.Trakce] = 0;                        // Placeholder for enum
             dataStorage[DataIdentifier.RezimJizdy] = 1;                    // Placeholder for enum
             dataStorage[DataIdentifier.MaxRychlost] = (ushort)150;         // ushort
             dataStorage[DataIdentifier.RucniBrzda] = true;                 // bool

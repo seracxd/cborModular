@@ -1,7 +1,7 @@
 ﻿using System.Formats.Cbor;
 using cborModular.DataModels;
 using cborModular.Services;
-using static Microsoft.Maui.ApplicationModel.Permissions;
+
 
 namespace cborModular
 {
@@ -15,7 +15,9 @@ namespace cborModular
             var dataProcessor = new DataProcessor(bluetoothSimulator);
 
             // Initialize storage dictionary
-            var dataStorage = new Dictionary<DataIdentifier, List<object>>();
+            //  var dataStorage = new Dictionary<DataIdentifier, List<object>>();
+
+            DataStorage.AddData(DataIdentifier.Rychlost, 15.5f);
 
             // List of data identifiers you want to request
             var requestedIdentifiers = new List<DataIdentifier>
@@ -29,22 +31,22 @@ namespace cborModular
             };
 
             // Send request and store response
-            dataProcessor.SendRequestAndStoreResponse(requestedIdentifiers, dataStorage);
+            dataProcessor.SendRequestAndStoreResponse(requestedIdentifiers);
 
             requestedIdentifiers = new List<DataIdentifier>
             {
              DataIdentifier.Rychlost,
              DataIdentifier.Pretizeni,
              DataIdentifier.OtackyMotoru,
-             DataIdentifier.SvetelnaUroven
+             DataIdentifier.SvetelnaUroven,
+             DataIdentifier.Plyn
             };
 
-            dataProcessor.SendRequestAndStoreResponse(requestedIdentifiers, dataStorage);
+            dataProcessor.SendRequestAndStoreResponse(requestedIdentifiers);
 
-            if (dataStorage.TryGetValue(DataIdentifier.Rychlost, out var rychlostValues) && rychlostValues.Count > 0)
-            {             
-                SpeedLabel.Text = $"Speed: {rychlostValues[^1]} km/h";  // poslední prvek
-            }
+
+            SpeedLabel.Text = $"Speed: {DataStorage.GetLastValue(DataIdentifier.Rychlost)} km/h";
+            ThrottleLabel.Text = $"Throttle: {DataStorage.GetLastValue(DataIdentifier.Plyn)}%";
         }
     }
 }

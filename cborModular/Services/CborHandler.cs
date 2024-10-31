@@ -105,8 +105,7 @@ namespace cborModular.Services
         /// Decodes a CBOR response and updates the provided storage dictionary with the data.
         /// </summary>
         /// <param name="cborData">CBOR-encoded response data</param>
-        /// <param name="storage">Dictionary to store decoded data, indexed by DataIdentifiers</param>
-        public static void DecodeResponse(byte[] cborData, Dictionary<DataIdentifier, List<object>> storage)
+        public static void DecodeResponse(byte[] cborData)
         {
             var reader = new CborReader(cborData);
 
@@ -128,11 +127,7 @@ namespace cborModular.Services
                 };
 
                 // Add value to the list in storage, creating a new list if necessary
-                if (!storage.ContainsKey(identifier))
-                {
-                    storage[identifier] = new List<object>();
-                }
-                storage[identifier].Add(value);
+                DataStorage.AddData(identifier, value);
             }
             reader.ReadEndMap();
         }
