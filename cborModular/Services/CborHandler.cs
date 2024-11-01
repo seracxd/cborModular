@@ -131,7 +131,7 @@ namespace cborModular.Services
 
             reader.ReadStartMap();
             string s = reader.ReadTextString();
-            int sequenceNumber = reader.ReadInt32(); // Read sequence number
+            int sequenceNumber = reader.ReadInt32();
 
             var responseData = new Dictionary<DataIdentifier, object>();
             while (reader.PeekState() != CborReaderState.EndMap)
