@@ -5,38 +5,45 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using cborModular.DataIdentifiers;
 
 namespace cborModular.DataModels
 {
     public static class DataStorage
     {
-        private static readonly Dictionary<DataIdentifier, List<object>> dataStorage = new Dictionary<DataIdentifier, List<object>>();
-        private static readonly List<DataIdentifier> requestedIdentifiers = new List<DataIdentifier>();
+        private static int sequenceNumber = 0;
+        private static readonly Dictionary<DataIdentifier, List<object>> storage = new();
+        private static readonly List<DataIdentifier> requestedIdentifiers = new();
+        private static readonly List<SetDataIdentifier> setIdentifiers = new();
 
+        public static int GetSequenceNumber() => sequenceNumber;
+
+        public static int IncrementSequenceNumber()
+        {
+            sequenceNumber++;
+            return sequenceNumber;
+        }
 
         public static void AddData(DataIdentifier identifier, object value)
         {
-            var expectedType = GetExpectedType(identifier);
-            if (value.GetType() != expectedType)
+            if (value.GetType() != identifier.ExpectedType)
             {
-                throw new InvalidOperationException($"Invalid data type. Expected {expectedType}, but got {value.GetType()}.");
+                throw new InvalidOperationException($"Invalid type for {identifier}. Expected {identifier.ExpectedType}.");
             }
-
-            if (!dataStorage.ContainsKey(identifier))
+            if (!storage.ContainsKey(identifier))
             {
-                dataStorage[identifier] = new List<object>();
+                storage[identifier] = new List<object>();
             }
-            dataStorage[identifier].Add(value);
+            storage[identifier].Add(value);
         }
 
         public static object GetLastValue(DataIdentifier identifier)
         {
-            if (dataStorage.ContainsKey(identifier) && dataStorage[identifier].Count > 0)
+            if (storage.TryGetValue(identifier, out var values) && values.Count > 0)
             {
-                // Get the last value in the list for the specified identifier
-                return dataStorage[identifier][^1]; // ^1 is the index from the end, accessing the last element
+                return values[^1];
             }
-            throw new InvalidOperationException("Data not found for the specified identifier.");
+            throw new InvalidOperationException($"No data found for identifier {identifier}.");
         }
 
         /// <summary>
@@ -54,6 +61,19 @@ namespace cborModular.DataModels
             }
         }
         /// <summary>
+        /// Adds a variable number of SetDataIdentifier values to the set identifiers list.
+        /// </summary>
+        public static void AddSet(params SetDataIdentifier[] identifiers)
+        {
+            foreach (var identifier in identifiers)
+            {
+                if (!setIdentifiers.Contains(identifier))
+                {
+                    setIdentifiers.Add(identifier);
+                }
+            }
+        }
+        /// <summary>
         /// Gets all requested identifiers.
         /// </summary>
         /// <returns>A read-only collection of the requested identifiers.</returns>
@@ -61,18 +81,22 @@ namespace cborModular.DataModels
         {
             return requestedIdentifiers.AsReadOnly();
         }
+        /// <summary>
+        /// Gets all set identifiers.
+        /// </summary>
+        /// <returns>A read-only collection of the requested identifiers.</returns>
+        public static IReadOnlyCollection<SetDataIdentifier> GetSetIdentifiers()
+        {
+            return setIdentifiers.AsReadOnly();
+        }
 
         public static void ClearRequest()
         {
             requestedIdentifiers.Clear();
         }
-
-
-        private static Type GetExpectedType(DataIdentifier identifier)
+        public static void ClearSet()
         {
-            var memberInfo = typeof(DataIdentifier).GetMember(identifier.ToString())[0];
-            var attribute = memberInfo.GetCustomAttribute<DataTypeAttribute>();
-            return attribute?.ExpectedType ?? throw new InvalidOperationException("Data type not specified.");
+            setIdentifiers.Clear();
         }
     }
 }

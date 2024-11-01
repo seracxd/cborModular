@@ -1,4 +1,5 @@
 ﻿using System.Formats.Cbor;
+using cborModular.DataIdentifiers;
 using cborModular.DataModels;
 using cborModular.Services;
 
@@ -11,38 +12,39 @@ namespace cborModular
         {
             InitializeComponent();
 
-            // funkce pro simulaci bluetooth
+            // Bluetooth simulation setup
             var bluetoothSimulator = new BluetoothSimulator();
             var dataProcessor = new DataProcessor(bluetoothSimulator);
 
-            // manuální přidání dat
-            DataStorage.AddData(DataIdentifier.Rychlost, 15.5f);
-            
-            // přidání požadovaných parametrů do bluetooth requestu
-            DataStorage.AddRequest([DataIdentifier.Rychlost, DataIdentifier.Plyn]);
-            // můžu přidávat na několikrát, ochrana proti duplikátům
-            DataStorage.AddRequest([DataIdentifier.Rychlost, DataIdentifier.PrumernaRychlost, DataIdentifier.RucniBrzda]);
+            // Manual data addition with type safety
+            DataStorage.AddData(RequestDataIdentifier.Speed, 15.5f);
 
-            // simulace bluetooth, vynulování requestu
+            // Add requested parameters for Bluetooth request
+            DataStorage.AddRequest(RequestDataIdentifier.Speed, RequestDataIdentifier.Throttle);
+
+            // Multiple additions without duplication
+            DataStorage.AddRequest(RequestDataIdentifier.Speed, RequestDataIdentifier.AverageSpeed, SetDataIdentifier.HandBrake);
+
+            // Simulate Bluetooth request and reset request storage
             dataProcessor.SendRequestAndStoreResponse();
 
-
-            var requestedIdentifiers = new List<DataIdentifier>
+            // Adding a list of requested identifiers
+            var requestedIdentifiers = new List<RequestDataIdentifier>
             {
-             DataIdentifier.Rychlost,
-             DataIdentifier.Pretizeni,
-             DataIdentifier.OtackyMotoru,
-             DataIdentifier.SvetelnaUroven,
-             DataIdentifier.Prevod
+             RequestDataIdentifier.Speed,
+             RequestDataIdentifier.GForce,
+             RequestDataIdentifier.EngineRPM,
+             RequestDataIdentifier.LightLevel,
+             RequestDataIdentifier.Gear
             };
-            // můžu vložit List
             DataStorage.AddRequest(requestedIdentifiers.ToArray());
 
+            // Send another simulated Bluetooth request and reset
             dataProcessor.SendRequestAndStoreResponse();
 
-            // zobrazení vybraných dat
-            SpeedLabel.Text = $"Speed: {DataStorage.GetLastValue(DataIdentifier.Rychlost)} km/h";
-            ThrottleLabel.Text = $"Throttle: {DataStorage.GetLastValue(DataIdentifier.Plyn)}%";
+            // Display retrieved data on the UI
+            SpeedLabel.Text = $"Speed: {DataStorage.GetLastValue(RequestDataIdentifier.Speed)} km/h";
+            ThrottleLabel.Text = $"Throttle: {DataStorage.GetLastValue(RequestDataIdentifier.Throttle)}%";
         }
     }
 }
