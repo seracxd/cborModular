@@ -125,7 +125,7 @@ namespace cborModular.Services
         /// </summary>
         /// <param name="cborData">CBOR-encoded response data</param>
         /// <returns>S Dictionary of requested data</returns>
-        public static Dictionary<DataIdentifier, object> DecodeResponse(byte[] cborData)
+        public static void DecodeResponse(byte[] cborData)
         {
             var reader = new CborReader(cborData);
 
@@ -152,8 +152,7 @@ namespace cborModular.Services
                         Type t when t == typeof(TimeSpan) => TimeSpan.FromTicks(reader.ReadInt64()),
                         _ => throw new InvalidOperationException($"Unsupported data type for identifier with ID {id}")
                     };
-
-                    responseData[identifier] = value;
+                    DataStorage.AddData(identifier, value);                  
                 }
                 else
                 {
@@ -162,7 +161,6 @@ namespace cborModular.Services
             }
 
             reader.ReadEndMap();
-            return  responseData;
         }
     }
 }
