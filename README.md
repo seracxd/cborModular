@@ -64,6 +64,14 @@ Odešlete další simulovaný požadavek přes Bluetooth:
 dataProcessor.ProcessBluetooth(MessageType.Request);
 ```
 
+### Nastavení hodnot por Set požadavky
+
+```csharp
+DataStorage.AddSet(SetDataIdentifier.ABS, true);
+dataProcessor.ProcessBluetooth(MessageType.Set);
+
+```
+
 ### Zobrazení získaných dat v UI
 
 Data uložená v `DataStorage` můžete zobrazit v uživatelském rozhraní:
@@ -71,7 +79,12 @@ Data uložená v `DataStorage` můžete zobrazit v uživatelském rozhraní:
 ```csharp
 SpeedLabel.Text = $"Speed: {DataStorage.GetLastValue(RequestDataIdentifier.Speed)} km/h";
 ThrottleLabel.Text = $"Throttle: {DataStorage.GetLastValue(RequestDataIdentifier.Throttle)}%";
-TimeLabel.Text = $"Time: {DataStorage.GetLastValue(RequestDataIdentifier.Speed, 1)}";
+```
+
+Pro vypsání času
+
+```csharp
+TimeLabel.Text = $"Time: {DataStorage.GetLastValue(RequestDataIdentifier.Speed, entry => entry.Timestamp)}";
 ```
 
 ---
