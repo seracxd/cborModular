@@ -48,6 +48,7 @@ namespace cborModular
             // Display retrieved data on the UI
             SpeedLabel.Text = $"Speed: {DataStorage.GetLastValue(RequestDataIdentifier.Speed)} km/h";
             ThrottleLabel.Text = $"Throttle: {DataStorage.GetLastValue(RequestDataIdentifier.Throttle)}%";
+
             TimeLabel.Text = $"Time: {DataStorage.GetLastValue(RequestDataIdentifier.Speed, entry => entry.Timestamp)}";
         }
     }
