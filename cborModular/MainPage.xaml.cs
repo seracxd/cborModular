@@ -26,7 +26,7 @@ namespace cborModular
             DataStorage.AddRequest(RequestDataIdentifier.Speed, RequestDataIdentifier.AverageSpeed, SetDataIdentifier.HandBrake);
 
             // Simulate Bluetooth request and reset request storage
-            dataProcessor.SendRequestAndStoreResponse();
+            dataProcessor.ProcessBluetooth(MessageType.Request);
 
             // Adding a list of requested identifiers
             var requestedIdentifiers = new List<RequestDataIdentifier>
@@ -37,14 +37,18 @@ namespace cborModular
              RequestDataIdentifier.LightLevel,
              RequestDataIdentifier.Gear
             };
-            DataStorage.AddRequest(requestedIdentifiers.ToArray());
+            DataStorage.AddRequest([.. requestedIdentifiers]);
 
             // Send another simulated Bluetooth request and reset
-            dataProcessor.SendRequestAndStoreResponse();
+            dataProcessor.ProcessBluetooth(MessageType.Request);
+
+            DataStorage.AddSet(SetDataIdentifier.ABS, true);
+            dataProcessor.ProcessBluetooth(MessageType.Set);
 
             // Display retrieved data on the UI
             SpeedLabel.Text = $"Speed: {DataStorage.GetLastValue(RequestDataIdentifier.Speed)} km/h";
             ThrottleLabel.Text = $"Throttle: {DataStorage.GetLastValue(RequestDataIdentifier.Throttle)}%";
+            TimeLabel.Text = $"Time: {DataStorage.GetLastValue(RequestDataIdentifier.Speed, entry => entry.Timestamp)}";
         }
     }
 }

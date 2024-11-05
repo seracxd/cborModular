@@ -9,7 +9,7 @@ namespace cborModular.Services
 {
     public class BluetoothSimulator
     {
-        private readonly Dictionary<DataIdentifier, object> dataStorage = new Dictionary<DataIdentifier, object>();
+        private readonly Dictionary<DataIdentifier, object> dataStorage = [];
 
         public BluetoothSimulator()
         {
@@ -60,7 +60,7 @@ namespace cborModular.Services
             InitializeData(SetDataIdentifier.RegenerativeBraking, true);             // bool
             InitializeData(SetDataIdentifier.Lights, true);                          // bool
             InitializeData(SetDataIdentifier.HazardLights, false);                   // bool
-            InitializeData(SetDataIdentifier.ABS, true);                             // bool
+            InitializeData(SetDataIdentifier.ABS, false);                             // bool
             InitializeData(SetDataIdentifier.BrakePower, false);                     // bool
             InitializeData(SetDataIdentifier.TractionControl, false);                    // Placeholder enum
             InitializeData(SetDataIdentifier.DrivingMode, "ECO");                          // Placeholder enum
@@ -89,29 +89,53 @@ namespace cborModular.Services
             dataStorage[identifier] = value;
         }
 
-        /// <summary>
-        /// Processes a CBOR-encoded Bluetooth request and returns a CBOR-encoded response.
-        /// </summary>
-        /// <param name="cborRequest">CBOR-encoded request specifying data identifiers</param>
-        /// <returns>CBOR-encoded response with requested data</returns>
         public byte[] ProcessBluetoothRequest(byte[] cborRequest)
         {
-            var (sequenceNumber, requestedIdentifiers ) = CborHandler.DecodeRequest(cborRequest);
+            // Decode the incoming CBOR request to get the sequence number, message type, and identifiers/data
+            var (sequenceNumber, messageType, data) = CborHandler.DecodeRequest(cborRequest);
             var responseData = new Dictionary<DataIdentifier, object>();
 
-            foreach (var identifier in requestedIdentifiers)
+            if (messageType == MessageType.Request)
             {
-                if (dataStorage.TryGetValue(identifier, out var value))
+                // Process the request type by retrieving data for the requested identifiers
+                foreach (var identifier in data.Keys)
                 {
-                    responseData[identifier] = value;
-                }
-                else
-                {
-                    Console.WriteLine($"Warning: Data for identifier {identifier} not found.");
+                    if (dataStorage.TryGetValue(identifier, out var value))
+                    {
+                        responseData[identifier] = value;
+                    }              
                 }
             }
+            else if (messageType == MessageType.Set)
+            {
+                // Process the set type by updating or storing the provided data
+                foreach (var kvp in data)
+                {
+                    var identifier = kvp.Key;
+                    var value = kvp.Value;
 
-            return CborHandler.EncodeResponse(sequenceNumber ,responseData);
+                    if (dataStorage.ContainsKey(identifier))
+                    {
+                        // Update the existing data
+                        dataStorage[identifier] = value;
+                      
+                    }
+                    else
+                    {
+                        // Store new data if it doesn't exist
+                        dataStorage.Add(identifier, value);
+                       
+                    }
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException($"Unsupported message type: {messageType}");
+            }
+
+            // Encode and return the response with the sequence number and response data
+            return CborHandler.EncodeResponse(sequenceNumber, responseData);
         }
+
     }
 }

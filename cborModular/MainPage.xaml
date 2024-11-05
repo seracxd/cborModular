@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="cborModular.MainPage">
-   
+
     <ContentPage.Content>
         <StackLayout Padding="20" Spacing="20">
 
@@ -22,6 +22,11 @@
             <!-- Další parametry (např. Throttle) -->
             <Label x:Name="ThrottleLabel"
                    Text="Throttle: N/A"
+                   FontSize="18"
+                   HorizontalOptions="Center"
+                   VerticalOptions="CenterAndExpand" />
+
+            <Label x:Name="TimeLabel"                  
                    FontSize="18"
                    HorizontalOptions="Center"
                    VerticalOptions="CenterAndExpand" />

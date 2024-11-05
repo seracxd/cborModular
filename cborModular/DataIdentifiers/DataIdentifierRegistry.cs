@@ -8,7 +8,7 @@ namespace cborModular.DataIdentifiers
 {
     public static class DataIdentifierRegistry
     {
-        private static readonly Dictionary<int, DataIdentifier> _identifiersById = new Dictionary<int, DataIdentifier>();
+        private static readonly Dictionary<int, DataIdentifier> _identifiersById = [];
 
         /// <summary>
         /// Registers a DataIdentifier in the central registry.
