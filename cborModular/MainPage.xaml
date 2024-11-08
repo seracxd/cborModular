@@ -6,30 +6,9 @@
     <ContentPage.Content>
         <StackLayout Padding="20" Spacing="20">
 
-            <!-- Nadpis -->
-            <Label Text="Motorcycle Data"
-                   FontSize="24"
-                   HorizontalOptions="Center"
-                   VerticalOptions="CenterAndExpand" />
-
-            <!-- Zobrazení rychlosti -->
-            <Label x:Name="SpeedLabel"
-                   Text="Speed: N/A"
-                   FontSize="18"
-                   HorizontalOptions="Center"
-                   VerticalOptions="CenterAndExpand" />
-
-            <!-- Další parametry (např. Throttle) -->
-            <Label x:Name="ThrottleLabel"
-                   Text="Throttle: N/A"
-                   FontSize="18"
-                   HorizontalOptions="Center"
-                   VerticalOptions="CenterAndExpand" />
-
-            <Label x:Name="TimeLabel"                  
-                   FontSize="18"
-                   HorizontalOptions="Center"
-                   VerticalOptions="CenterAndExpand" />
+            <Button Text="Connect to GATT Server" Clicked="ConnectButton_Clicked"/>
+            <Button Text="Send Request" Clicked="SendRequestButton_Clicked"/>
+            <Button Text="Disconnect" Clicked="DisconnectButton_Clicked"/>
 
         </StackLayout>
     </ContentPage.Content>
