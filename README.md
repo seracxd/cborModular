@@ -64,8 +64,6 @@ Odešlete další simulovaný požadavek přes Bluetooth:
 dataProcessor.ProcessBluetooth(MessageType.Request);
 ```
 
-
-
 ### Nastavení hodnot por Set požadavky
 
 ```csharp
