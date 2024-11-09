@@ -12,6 +12,7 @@ namespace cborModular.Services.BluetoothServices
     {
         private readonly IAdapter _adapter;
         private readonly string AppName = "KubergMoto";
+        public event EventHandler<string> ApplicationDiscovered;
 
         public BleScanner()
         {
@@ -45,6 +46,7 @@ namespace cborModular.Services.BluetoothServices
                         {
                             if (Encoding.UTF8.GetString(record.Data) == AppName)
                             {
+                                ApplicationDiscovered?.Invoke(this, AppName);
                                 await _adapter.ConnectToDeviceAsync(device);
                             }
                             break;
