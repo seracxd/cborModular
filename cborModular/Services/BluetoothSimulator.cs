@@ -103,7 +103,7 @@ namespace cborModular.Services
                     if (dataStorage.TryGetValue(identifier, out var value))
                     {
                         responseData[identifier] = value;
-                    }              
+                    }
                 }
             }
             else if (messageType == MessageType.Set)
@@ -114,17 +114,11 @@ namespace cborModular.Services
                     var identifier = kvp.Key;
                     var value = kvp.Value;
 
-                    if (dataStorage.ContainsKey(identifier))
+                    if (!dataStorage.TryAdd(identifier, value))
                     {
                         // Update the existing data
                         dataStorage[identifier] = value;
-                      
-                    }
-                    else
-                    {
-                        // Store new data if it doesn't exist
-                        dataStorage.Add(identifier, value);
-                       
+
                     }
                 }
             }

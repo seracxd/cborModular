@@ -1,85 +1,90 @@
-﻿using System.Formats.Cbor;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Formats.Cbor;
 using System.Linq.Expressions;
 using cborModular.DataIdentifiers;
 using cborModular.DataModels;
 using cborModular.Services;
-using cborModular.Services.BluetoothServices;
 
+ 
+using Windows.Devices.Bluetooth;
+using Windows.Devices.Bluetooth.GenericAttributeProfile;
+using Windows.Storage.Streams;
+ 
 
 namespace cborModular
 {
     public partial class MainPage : ContentPage
     {
-        private readonly BluetoothManager _bluetoothManager;
-
         public MainPage()
         {
             InitializeComponent();
-            _bluetoothManager = new BluetoothManager();
-
-
-
-
 
             // Bluetooth simulation setup
             var bluetoothSimulator = new BluetoothSimulator();
             var dataProcessor = new DataProcessor(bluetoothSimulator);
 
-            // Manual data addition with type safety
-            DataStorage.AddData(RequestDataIdentifier.Speed, 15.5f);
 
-            // Add requested parameters for Bluetooth request
-            DataStorage.AddRequest(RequestDataIdentifier.Speed, RequestDataIdentifier.Throttle);
-
-            // Multiple additions without duplication
-            DataStorage.AddRequest(RequestDataIdentifier.Speed, RequestDataIdentifier.AverageSpeed, SetDataIdentifier.HandBrake);
-
-            // Simulate Bluetooth request and reset request storage
-            dataProcessor.ProcessBluetooth(MessageType.Request);
-
-            // Adding a list of requested identifiers
-            var requestedIdentifiers = new List<RequestDataIdentifier>
-            {
-             RequestDataIdentifier.Speed,
-             RequestDataIdentifier.GForce,
-             RequestDataIdentifier.EngineRPM,
-             RequestDataIdentifier.LightLevel,
-             RequestDataIdentifier.Gear
-            };
-            DataStorage.AddRequest([.. requestedIdentifiers]);
-
-            // Send another simulated Bluetooth request and reset
-            dataProcessor.ProcessBluetooth(MessageType.Request);
-
-            DataStorage.AddSet(SetDataIdentifier.ABS, true);
-            dataProcessor.ProcessBluetooth(MessageType.Set);
-
-            // Display retrieved data on the UI
-            SpeedLabel.Text = $"Speed: {DataStorage.GetLastValue(RequestDataIdentifier.Speed)} km/h";
-            ThrottleLabel.Text = $"Throttle: {DataStorage.GetLastValue(RequestDataIdentifier.Throttle)}%";
-
-            TimeLabel.Text = $"Time: {DataStorage.GetLastValue(RequestDataIdentifier.Speed, entry => entry.Timestamp)}";
-        }
-        
-      
-        private async void OnScanButtonClicked(object sender, EventArgs e)
+        private void OnNotificationReceived(GattCharacteristic sender, GattValueChangedEventArgs args)
         {
-            await _bluetoothManager.StartScanningAsync();
-        }
+            var reader = DataReader.FromBuffer(args.CharacteristicValue);
+            byte[] receivedData = new byte[args.CharacteristicValue.Length];
+            reader.ReadBytes(receivedData);
 
-        private async void OnConnectButtonClicked(object sender, EventArgs e)
-        {
-            Guid serviceGuid = new("0000180D-0000-1000-8000-00805F9B34FB");
-            Guid requestCharacteristicGuid = new("00002A37-0000-1000-8000-00805F9B34FB");
-            Guid notificationCharacteristicGuid = new("00002A38-0000-1000-8000-00805F9B34FB");
-
+            // Decode the CBOR response
+            CborHandler.DecodeResponse(receivedData);
            
 
-            await _bluetoothManager.ConnectAndSubscribeToCharacteristic(deviceGuid, serviceGuid, notificationCharacteristicGuid, data =>
+            // Optionally remove the event handler if you only want to receive a single response per request
+            _notificationCharacteristic.ValueChanged -= OnNotificationReceived;
+        }
+
+
+
+        private async void DisconnectButton_Clicked(object sender, EventArgs e)
+        {
+            if (_notificationCharacteristic != null)
             {
-                // Handle notification data
-                Console.WriteLine($"Notification received: {BitConverter.ToString(data)}");
-            });
+                await _notificationCharacteristic.WriteClientCharacteristicConfigurationDescriptorAsync(GattClientCharacteristicConfigurationDescriptorValue.None);
+                _notificationCharacteristic.ValueChanged -= OnNotificationReceived;
+            }
+
+            _device?.Dispose();
+            Console.WriteLine("Disconnected.");
+        }
+
+
+        public async Task ProcessBluetoothAsync(MessageType messageType, Dictionary<DataIdentifier, object> data)
+        {
+
+            if (_requestCharacteristic == null || _notificationCharacteristic == null)
+            {
+                Console.WriteLine("Bluetooth characteristics not initialized.");
+                return;
+            }
+
+            // Step 1: Encode the request into CBOR format
+            byte[] cborRequest = CborHandler.EncodeRequest(messageType);
+
+            // Step 2: Send the request to the Bluetooth server by writing to the request characteristic
+            var writer = new DataWriter();
+            writer.WriteBytes(cborRequest);
+            var result = await _requestCharacteristic.WriteValueAsync(writer.DetachBuffer());
+
+            if (result == GattCommunicationStatus.Success)
+            {
+                Console.WriteLine("Request sent successfully.");
+
+                // Step 3: Wait for the response from the notification characteristic
+                _notificationCharacteristic.ValueChanged += OnNotificationReceived;
+            }
+            else
+            {
+                Console.WriteLine("Failed to send request.");
+            }
+
         }
     }
 }
