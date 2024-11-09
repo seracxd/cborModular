@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 
 namespace cborModular.DataIdentifiers
 {
-    public enum MessageType
+    public enum BluetoothCharakteristicIdentifiers
     {
-        Request = 1100,
-        Set = 1101,
-        Notification = 1102,
-        SetNotification = 1103,
-        Undefined =1104     
+        Read = 0,
+        Write = 1,
+        DataNotification = 2,
+        WarningNotificacion = 3,
+
+        Service =10,
     }
 }

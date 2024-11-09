@@ -30,6 +30,10 @@
                    FontSize="18"
                    HorizontalOptions="Center"
                    VerticalOptions="CenterAndExpand" />
+            
+            <Button Text="Scan For Devices" Clicked="OnScanButtonClicked"/>
+
+            <Button Text="Scan For Devices" Clicked="OnConnectButtonClicked"/>
 
         </StackLayout>
     </ContentPage.Content>

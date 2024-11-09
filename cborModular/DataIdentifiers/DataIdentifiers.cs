@@ -144,7 +144,7 @@ namespace cborModular.DataIdentifiers
             DataIdentifierRegistry.Register(this);
             Value = value;
         }
-        public override bool Equals(object? obj)
+        public override bool Equals(object obj)
         {
             if (obj is SetDataIdentifier other)
             {
