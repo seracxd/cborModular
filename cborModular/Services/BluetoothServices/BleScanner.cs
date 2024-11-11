@@ -42,14 +42,16 @@ namespace cborModular.Services.BluetoothServices
                     foreach (var record in device.AdvertisementRecords)
                     {
                         // Hledáme typ záznamu odpovídající `ServiceData`
-                        if (record.Type == Plugin.BLE.Abstractions.AdvertisementRecordType.ServiceData)
+                        if (record.Type == Plugin.BLE.Abstractions.AdvertisementRecordType.UuidsComplete128Bit)
                         {
-                            if (Encoding.UTF8.GetString(record.Data) == AppName)
+                            byte[] bytes = record.Data;
+                            Array.Reverse(bytes);
+
+                            if (GuidParser.ParseCustomGuid(new Guid(bytes)).isValid)
                             {
-                                ApplicationDiscovered?.Invoke(this, AppName);
                                 await _adapter.ConnectToDeviceAsync(device);
+                                break;
                             }
-                            break;
                         }
                     }
                 }
