@@ -11,12 +11,14 @@ namespace cborModular.Services.BluetoothServices
     internal class BleScanner
     {
         private readonly IAdapter _adapter;
+        private readonly MainPage _mainPage;
 
-        public BleScanner()
+        public BleScanner(MainPage mainPage)
         {
             _adapter = CrossBluetoothLE.Current.Adapter;
             _adapter.DeviceDiscovered += OnDeviceDiscovered;
             _adapter.DeviceConnected += OnDeviceConnected;
+            _mainPage = mainPage;
         }
 
 
@@ -25,7 +27,7 @@ namespace cborModular.Services.BluetoothServices
             var device = e.Device;
 
 
-            await MainPage.HandleDeviceConnectedAsync(device);
+            await _mainPage.HandleDeviceConnectedAsync(device);
         }
 
        

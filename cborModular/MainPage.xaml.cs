@@ -26,38 +26,41 @@ namespace cborModular
             InitializeComponent();
 
             // Inicializace BLE skeneru
-            _bleClient = new BleScanner();
+            _bleClient = new BleScanner(this);
 
             DeviceDetails = new ObservableCollection<string>();
             DevicesListView.ItemsSource = DeviceDetails;
         }
 
-        internal static async Task HandleDeviceConnectedAsync(IDevice device)
+        internal async Task HandleDeviceConnectedAsync(IDevice device)
         {
-            DeviceDetails.Clear(); // Vyčistíme předchozí záznamy
+            // Zajistíme, že operace proběhne na hlavním vlákně pomocí Dispatcher
+            await Dispatcher.DispatchAsync(() => DeviceDetails.Clear());
 
             // Získání a zobrazení služeb zařízení
             var services = await device.GetServicesAsync();
             foreach (var service in services)
             {
-                DeviceDetails.Add($"Služba: {service.Id}");
+                await Dispatcher.DispatchAsync(() => DeviceDetails.Add($"Služba: {service.Id}"));
 
                 // Získání a zobrazení charakteristik pro každou službu
                 var characteristics = await service.GetCharacteristicsAsync();
                 foreach (var characteristic in characteristics)
                 {
-                    DeviceDetails.Add($"  Charakteristika: {characteristic.Id}");
-                    DeviceDetails.Add($"    Vlastnosti: {characteristic.Properties}");
+                    await Dispatcher.DispatchAsync(() => DeviceDetails.Add($"  Charakteristika: {characteristic.Id}"));
+                    await Dispatcher.DispatchAsync(() => DeviceDetails.Add($"    Vlastnosti: {characteristic.Properties}"));
 
                     // Zobrazení deskriptorů (volitelné)
                     var descriptors = await characteristic.GetDescriptorsAsync();
                     foreach (var descriptor in descriptors)
                     {
-                        DeviceDetails.Add($"    Deskriptor: {descriptor.Id}");
+                        await Dispatcher.DispatchAsync(() => DeviceDetails.Add($"    Deskriptor: {descriptor.Id}"));
                     }
                 }
             }
         }
+
+
 
         private async void OnStartScanningClicked(object sender, EventArgs e)
         {
