@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace cborModular.Services.BluetoothServices
 {
-    internal class GuidParser
+    internal class GuidServices
     {
         private const string AppId = "ab12ef34";
 
@@ -38,6 +38,18 @@ namespace cborModular.Services.BluetoothServices
 
             // Pokud něco nesedí, vracíme, že GUID není platné
             return (null, false);
+        }
+        public static Guid ReverseGuidByteOrder(byte[] bytes)
+        {
+            Array.Reverse(bytes);
+            // Obrátit první 4 bajty (int)
+            Array.Reverse(bytes, 0, 4);
+            // Obrátit další 2 bajty (short)
+            Array.Reverse(bytes, 4, 2);
+            // Obrátit další 2 bajty (short)
+            Array.Reverse(bytes, 6, 2);
+
+            return new Guid(bytes);
         }
     }
 }

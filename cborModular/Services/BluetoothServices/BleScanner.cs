@@ -11,14 +11,27 @@ namespace cborModular.Services.BluetoothServices
     internal class BleScanner
     {
         private readonly IAdapter _adapter;
-        private readonly string AppName = "KubergMoto";
-        public event EventHandler<string> ApplicationDiscovered;
 
         public BleScanner()
         {
             _adapter = CrossBluetoothLE.Current.Adapter;
             _adapter.DeviceDiscovered += OnDeviceDiscovered;
+            _adapter.DeviceConnected += OnDeviceConnected;
         }
+
+
+        private async void OnDeviceConnected(object sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
+        {
+            var device = e.Device;
+
+
+            await MainPage.HandleDeviceConnectedAsync(device);
+        }
+
+       
+
+
+
 
         public async Task StartScanningAsync()
         {
@@ -34,12 +47,7 @@ namespace cborModular.Services.BluetoothServices
         private async void OnDeviceDiscovered(object sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
         {
             try
-            {
-                _adapter.DeviceConnected += async (sender, e ) =>
-                {
-                    Console.WriteLine("d");
-                };
-
+            {             
                 var device = e.Device;
 
                 if (device.AdvertisementRecords != null)
@@ -51,9 +59,9 @@ namespace cborModular.Services.BluetoothServices
                         {
                             byte[] bytes = record.Data;
 
-                            Guid id = ReverseGuidByteOrder(bytes);
+                            Guid id = GuidServices.ReverseGuidByteOrder(bytes);
 
-                            if (GuidParser.ParseCustomGuid(id).isValid)
+                            if (GuidServices.ParseCustomGuid(id).isValid)
                             {
                                 await _adapter.ConnectToDeviceAsync(device);
                                 break;
@@ -69,19 +77,5 @@ namespace cborModular.Services.BluetoothServices
                 await StopScanningAsync();
             }
         }
-
-        public static Guid ReverseGuidByteOrder(byte[] bytes)
-        {
-            Array.Reverse(bytes);
-            // Obrátit první 4 bajty (int)
-            Array.Reverse(bytes, 0, 4);
-            // Obrátit další 2 bajty (short)
-            Array.Reverse(bytes, 4, 2);
-            // Obrátit další 2 bajty (short)
-            Array.Reverse(bytes, 6, 2);
-
-            return new Guid(bytes);
-        }
     }
-
 }
