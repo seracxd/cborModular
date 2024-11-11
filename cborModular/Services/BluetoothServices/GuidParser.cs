@@ -9,7 +9,7 @@ namespace cborModular.Services.BluetoothServices
 {
     internal class GuidParser
     {
-        private const string AppId = "AB12EF34";
+        private const string AppId = "ab12ef34";
 
         public static (BluetoothCharakteristicIdentifiers? characteristicType, bool isValid) ParseCustomGuid(Guid guid)
         {

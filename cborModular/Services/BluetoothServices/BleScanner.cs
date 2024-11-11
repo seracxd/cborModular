@@ -35,6 +35,11 @@ namespace cborModular.Services.BluetoothServices
         {
             try
             {
+                _adapter.DeviceConnected += async (sender, e ) =>
+                {
+                    Console.WriteLine("d");
+                };
+
                 var device = e.Device;
 
                 if (device.AdvertisementRecords != null)
@@ -45,9 +50,10 @@ namespace cborModular.Services.BluetoothServices
                         if (record.Type == Plugin.BLE.Abstractions.AdvertisementRecordType.UuidsComplete128Bit)
                         {
                             byte[] bytes = record.Data;
-                            Array.Reverse(bytes);
 
-                            if (GuidParser.ParseCustomGuid(new Guid(bytes)).isValid)
+                            Guid id = ReverseGuidByteOrder(bytes);
+
+                            if (GuidParser.ParseCustomGuid(id).isValid)
                             {
                                 await _adapter.ConnectToDeviceAsync(device);
                                 break;
@@ -63,5 +69,19 @@ namespace cborModular.Services.BluetoothServices
                 await StopScanningAsync();
             }
         }
+
+        public static Guid ReverseGuidByteOrder(byte[] bytes)
+        {
+            Array.Reverse(bytes);
+            // Obrátit první 4 bajty (int)
+            Array.Reverse(bytes, 0, 4);
+            // Obrátit další 2 bajty (short)
+            Array.Reverse(bytes, 4, 2);
+            // Obrátit další 2 bajty (short)
+            Array.Reverse(bytes, 6, 2);
+
+            return new Guid(bytes);
+        }
     }
+
 }
