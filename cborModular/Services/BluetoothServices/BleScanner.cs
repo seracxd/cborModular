@@ -1,7 +1,9 @@
 ﻿using Plugin.BLE;
+using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,37 +14,25 @@ namespace cborModular.Services.BluetoothServices
     {
         private readonly IAdapter _adapter;
         private readonly MainPage _mainPage;
+        internal ObservableCollection<IDevice> DiscoveredDevices { get; private set; }
 
         public BleScanner(MainPage mainPage)
         {
             _adapter = CrossBluetoothLE.Current.Adapter;
-            _adapter.DeviceDiscovered += OnDeviceDiscovered;
-            _adapter.DeviceConnected += OnDeviceConnected;
+            _adapter.DeviceDiscovered += OnDeviceDiscovered;           
             _mainPage = mainPage;
+
+            DiscoveredDevices = new ObservableCollection<IDevice>();
         }
-
-
-        private async void OnDeviceConnected(object sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
-        {
-            var device = e.Device;
-
-
-            await _mainPage.HandleDeviceConnectedAsync(device);
-        }
-
-       
-
-
 
 
         public async Task StartScanningAsync()
         {
-            // Spuštění skenování
+            DiscoveredDevices.Clear();
             await _adapter.StartScanningForDevicesAsync();
         }
         public async Task StopScanningAsync()
-        {
-            // Spuštění skenování
+        {        
             await _adapter.StopScanningForDevicesAsync();
         }
 
@@ -57,7 +47,7 @@ namespace cborModular.Services.BluetoothServices
                     foreach (var record in device.AdvertisementRecords)
                     {
                         // Hledáme typ záznamu odpovídající `ServiceData`
-                        if (record.Type == Plugin.BLE.Abstractions.AdvertisementRecordType.UuidsComplete128Bit)
+                        if (record.Type == AdvertisementRecordType.UuidsComplete128Bit)
                         {
                             byte[] bytes = record.Data;
 
@@ -65,8 +55,12 @@ namespace cborModular.Services.BluetoothServices
 
                             if (GuidServices.ParseCustomGuid(id).isValid)
                             {
-                                await _adapter.ConnectToDeviceAsync(device);
-                                break;
+                                if (!DiscoveredDevices.Contains(device))
+                                {
+                                    DiscoveredDevices.Add(device);
+                                }
+                                // await _adapter.ConnectToDeviceAsync(device);
+                                // break;
                             }
                         }
                     }
