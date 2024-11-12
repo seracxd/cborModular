@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using cborModular.DataModels;
 using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE.Abstractions.EventArgs;
@@ -14,6 +15,7 @@ namespace cborModular.Services.BluetoothServices
 
         public event EventHandler<IDevice> DeviceConnected;
         public event EventHandler<IDevice> DeviceDisconnected;
+        private BleDeviceModel _connectedDeviceModel;
 
         public BleConnection(BleScanner scanner)
         {
@@ -37,13 +39,72 @@ namespace cborModular.Services.BluetoothServices
             try
             {
                 var device = e.Device;
-                var data = device.AdvertisementRecords;
 
+                // Vytvoříme novou instanci BleDeviceModel
+                _connectedDeviceModel = new BleDeviceModel
+                {
+                    Name = device.Name,
+                    Id = device.Id,
+                    IsConnected = true
+                };
+
+                // Načtení reklamních dat
+                foreach (var record in device.AdvertisementRecords)
+                {
+                    _connectedDeviceModel.AdvertisementData.Add(record.Data);
+                }
+
+                // Načtení služeb
+                var services = await device.GetServicesAsync();
+                foreach (var service in services)
+                {
+                    var serviceModel = new BluetoothServiceModel
+                    {
+                        ServiceId = service.Id,
+                        ServiceName = service.Name,
+                        IsPrimary = service.IsPrimary
+                    };
+
+                    // Načtení charakteristik pro každou službu
+                    var characteristics = await service.GetCharacteristicsAsync();
+                    foreach (var characteristic in characteristics)
+                    {
+                        var characteristicModel = new BluetoothCharacteristicModel
+                        {
+                            CharacteristicId = characteristic.Id,
+                            CharacteristicName = characteristic.Name
+                        };
+
+                        // Načtení descriptorů pro každou charakteristiku
+                        var descriptors = await characteristic.GetDescriptorsAsync();
+                        foreach (var descriptor in descriptors)
+                        {
+                            var descriptorModel = new BluetoothDescriptorModel
+                            {
+                                DescriptorId = descriptor.Id,
+                                DescriptorName = descriptor.Name
+                            };
+
+                            characteristicModel.Descriptors.Add(descriptorModel);
+                        }
+
+                        serviceModel.Characteristics.Add(characteristicModel);
+                    }
+
+                    _connectedDeviceModel.Services.Add(serviceModel);
+                }
+
+                // (Volitelně) zde můžete provést další akce po načtení všech dat, například aktualizaci UI
+                Console.WriteLine("Device details loaded and ready for use.");
             }
-            catch (Exception ex) { }
-
-           
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving device details: {ex.Message}");
+            }
         }
+
+
+
 
         // Připojení k novému zařízení
         public async Task ConnectToDeviceAsync(IDevice device)
