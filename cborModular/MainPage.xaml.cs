@@ -24,7 +24,7 @@ namespace cborModular
             InitializeComponent();
 
             // Inicializace BLE skeneru
-            _bleClient = new BleScanner(this);
+            _bleClient = new BleScanner(Dispatcher);
          
             DevicesListView.ItemsSource = _bleClient.DiscoveredDevices;
         }

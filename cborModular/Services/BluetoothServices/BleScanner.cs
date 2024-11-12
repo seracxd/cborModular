@@ -1,4 +1,5 @@
-﻿using Plugin.BLE;
+﻿using Microsoft.Maui.Dispatching;
+using Plugin.BLE;
 using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
 using System;
@@ -13,15 +14,14 @@ namespace cborModular.Services.BluetoothServices
     internal class BleScanner
     {
         private readonly IAdapter _adapter;
-        private readonly MainPage _mainPage;
+        private readonly IDispatcher _dispatcher;
         internal ObservableCollection<IDevice> DiscoveredDevices { get; private set; }
 
-        public BleScanner(MainPage mainPage)
+        public BleScanner(IDispatcher dispatcher)
         {
             _adapter = CrossBluetoothLE.Current.Adapter;
-            _adapter.DeviceDiscovered += OnDeviceDiscovered;           
-            _mainPage = mainPage;
-
+            _adapter.DeviceDiscovered += OnDeviceDiscovered;
+            _dispatcher = dispatcher;
             DiscoveredDevices = new ObservableCollection<IDevice>();
         }
 
@@ -32,14 +32,14 @@ namespace cborModular.Services.BluetoothServices
             await _adapter.StartScanningForDevicesAsync();
         }
         public async Task StopScanningAsync()
-        {        
+        {
             await _adapter.StopScanningForDevicesAsync();
         }
 
         private async void OnDeviceDiscovered(object sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
         {
             try
-            {             
+            {
                 var device = e.Device;
 
                 if (device.AdvertisementRecords != null)
@@ -55,10 +55,14 @@ namespace cborModular.Services.BluetoothServices
 
                             if (GuidServices.ParseCustomGuid(id).isValid)
                             {
-                                if (!DiscoveredDevices.Contains(device))
+                                _dispatcher.Dispatch(() =>
                                 {
-                                    DiscoveredDevices.Add(device);
-                                }
+
+                                    if (!DiscoveredDevices.Contains(device))
+                                    {
+                                        DiscoveredDevices.Add(device);
+                                    }
+                                });
                                 // await _adapter.ConnectToDeviceAsync(device);
                                 // break;
                             }
