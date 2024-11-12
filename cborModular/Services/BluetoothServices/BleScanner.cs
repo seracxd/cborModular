@@ -60,14 +60,11 @@ namespace cborModular.Services.BluetoothServices
                             {
                                 _dispatcher.Dispatch(() =>
                                 {
-
                                     if (!DiscoveredDevices.Contains(device))
                                     {
                                         DiscoveredDevices.Add(device);
                                     }
-                                });
-                                // await _adapter.ConnectToDeviceAsync(device);
-                                // break;
+                                });                              
                             }
                         }
                     }

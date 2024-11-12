@@ -8,7 +8,7 @@
 
             <Button Text="Start Scanning" Clicked="OnStartScanningClicked"/>
 
-            <ListView x:Name="DevicesListView">
+            <ListView x:Name="DevicesListView" ItemSelected="OnDeviceSelected">
                 <ListView.Header>
                     <Label Text="Discovered Applications" FontSize="Medium" Padding="5" />
                 </ListView.Header>

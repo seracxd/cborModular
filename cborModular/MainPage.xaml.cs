@@ -27,8 +27,9 @@ namespace cborModular
             _bleClient = new BleScanner(Dispatcher);
             _bleConnection = new BleConnection(_bleClient);
 
+
             DevicesListView.ItemsSource = _bleClient.DiscoveredDevices;
-            
+
         }
 
         private async void OnStartScanningClicked(object sender, EventArgs e)
@@ -41,6 +42,11 @@ namespace cborModular
             if (selectedDevice != null)
             {
                 await _bleConnection.ConnectToDeviceAsync(selectedDevice);
+
+                var bleGetServices = new BleGetServices(selectedDevice);
+
+                await bleGetServices.DisplayServicesAndCharacteristicsAsync();
+
             }
         }
     }
