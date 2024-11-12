@@ -17,7 +17,7 @@ namespace cborModular
     public partial class MainPage : ContentPage
     {
         private readonly BleScanner _bleClient;
-
+        private readonly BleConnection _bleConnection;
 
         public MainPage()
         {
@@ -25,45 +25,23 @@ namespace cborModular
 
             // Inicializace BLE skeneru
             _bleClient = new BleScanner(Dispatcher);
-         
+            _bleConnection = new BleConnection(_bleClient);
+
             DevicesListView.ItemsSource = _bleClient.DiscoveredDevices;
-        }
-
-        //internal async Task HandleDeviceConnectedAsync(IDevice device)
-        //{
-        //    // Zajistíme, že operace proběhne na hlavním vlákně pomocí Dispatcher
-        //    await Dispatcher.DispatchAsync(() => DeviceDetails.Clear());
-
-        //    // Získání a zobrazení služeb zařízení
-        //    var services = await device.GetServicesAsync();
             
-        //    foreach (var service in services)
-        //    {
-        //        await Dispatcher.DispatchAsync(() => DeviceDetails.Add($"Služba: {service.Id}"));
-
-        //        // Získání a zobrazení charakteristik pro každou službu
-        //        var characteristics = await service.GetCharacteristicsAsync();
-        //        foreach (var characteristic in characteristics)
-        //        {
-        //            await Dispatcher.DispatchAsync(() => DeviceDetails.Add($"  Charakteristika: {characteristic.Id}"));
-        //            await Dispatcher.DispatchAsync(() => DeviceDetails.Add($"    Vlastnosti: {characteristic.Properties}"));
-
-        //            // Zobrazení deskriptorů (volitelné)
-        //            var descriptors = await characteristic.GetDescriptorsAsync();
-        //            foreach (var descriptor in descriptors)
-        //            {
-        //                await Dispatcher.DispatchAsync(() => DeviceDetails.Add($"    Deskriptor: {descriptor.Id}"));
-        //            }
-        //        }
-        //    }
-        //}
-
-
+        }
 
         private async void OnStartScanningClicked(object sender, EventArgs e)
         {
             await _bleClient.StartScanningAsync();
         }
-
+        private async void OnDeviceSelected(object sender, SelectedItemChangedEventArgs e)
+        {
+            var selectedDevice = e.SelectedItem as IDevice;
+            if (selectedDevice != null)
+            {
+                await _bleConnection.ConnectToDeviceAsync(selectedDevice);
+            }
+        }
     }
 }

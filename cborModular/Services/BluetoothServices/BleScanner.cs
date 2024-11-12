@@ -16,6 +16,8 @@ namespace cborModular.Services.BluetoothServices
         private readonly IAdapter _adapter;
         private readonly IDispatcher _dispatcher;
         internal ObservableCollection<IDevice> DiscoveredDevices { get; private set; }
+        public IAdapter Adapter => _adapter;
+
 
         public BleScanner(IDispatcher dispatcher)
         {
@@ -23,6 +25,7 @@ namespace cborModular.Services.BluetoothServices
             _adapter.DeviceDiscovered += OnDeviceDiscovered;
             _dispatcher = dispatcher;
             DiscoveredDevices = new ObservableCollection<IDevice>();
+            
         }
 
 
