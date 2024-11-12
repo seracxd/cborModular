@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE.Abstractions.EventArgs;
 
@@ -18,6 +19,7 @@ namespace cborModular.Services.BluetoothServices
         {
             _scanner = scanner;
 
+            _scanner.Adapter.DeviceConnected += OnDeviceConnected;
             // Připojíme se k zařízení, pokud se odpojí
             _scanner.DiscoveredDevices.CollectionChanged += async (s, e) =>
             {
@@ -29,6 +31,18 @@ namespace cborModular.Services.BluetoothServices
                     }
                 }
             };
+        }
+        private async void OnDeviceConnected(object sender, DeviceEventArgs e)
+        {
+            try
+            {
+                var device = e.Device;
+                var data = device.AdvertisementRecords;
+
+            }
+            catch (Exception ex) { }
+
+           
         }
 
         // Připojení k novému zařízení

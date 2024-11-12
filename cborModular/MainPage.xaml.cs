@@ -46,7 +46,6 @@ namespace cborModular
                 await _bleConnection.ConnectToDeviceAsync(selectedDevice);
 
                 bleGetServices = new BleGetServices(selectedDevice);
-
             }
         }
 

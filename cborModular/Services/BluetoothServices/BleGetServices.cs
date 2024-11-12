@@ -57,5 +57,6 @@ namespace cborModular.Services.BluetoothServices
                 }
             }
         }
+
     }
 }

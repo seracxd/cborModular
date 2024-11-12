@@ -24,8 +24,7 @@ namespace cborModular.Services.BluetoothServices
             _adapter = CrossBluetoothLE.Current.Adapter;
             _adapter.DeviceDiscovered += OnDeviceDiscovered;
             _dispatcher = dispatcher;
-            DiscoveredDevices = new ObservableCollection<IDevice>();
-            
+            DiscoveredDevices = new ObservableCollection<IDevice>();           
         }
 
 
