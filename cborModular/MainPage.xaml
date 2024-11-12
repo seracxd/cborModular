@@ -18,6 +18,7 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
+            <Button Text="Get Charakteristics" Clicked="OnGetCharakteristicsClicked"/>
         </StackLayout>
     </ContentPage.Content>
 

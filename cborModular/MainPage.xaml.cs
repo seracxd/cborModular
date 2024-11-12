@@ -19,6 +19,8 @@ namespace cborModular
         private readonly BleScanner _bleClient;
         private readonly BleConnection _bleConnection;
 
+        private  BleGetServices bleGetServices;
+
         public MainPage()
         {
             InitializeComponent();
@@ -43,11 +45,14 @@ namespace cborModular
             {
                 await _bleConnection.ConnectToDeviceAsync(selectedDevice);
 
-                var bleGetServices = new BleGetServices(selectedDevice);
-
-                await bleGetServices.DisplayServicesAndCharacteristicsAsync();
+                bleGetServices = new BleGetServices(selectedDevice);
 
             }
+        }
+
+        private async void OnGetCharakteristicsClicked(object sender, EventArgs e)
+        {         
+            await bleGetServices.DisplayServicesAndCharacteristicsAsync();
         }
     }
 }
