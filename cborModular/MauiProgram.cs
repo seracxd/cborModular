@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE;
+using cborModular.Interfaces;
+using cborModular.Services.BluetoothServices;
+using cborModular.Interfaces.Controlers;
 
 namespace cborModular
 {
@@ -16,14 +19,24 @@ namespace cborModular
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
-     
-            builder.Services.AddTransient<MainPage>();
+
+            ConfigureServices(builder.Services);
 
 #if DEBUG
             builder.Logging.AddDebug();
 #endif
 
             return builder.Build();
+        }
+        private static void ConfigureServices(IServiceCollection services)
+        {
+            // Registrace hlavní služby BluetoothService a závislostí
+            services.AddSingleton<IBluetoothService, BluetoothControler>();
+            services.AddSingleton<IDataService, DataControler>();
+
+            // Registrace MainPage a App
+            services.AddTransient<MainPage>();
+            services.AddSingleton<App>();
         }
     }
 }

@@ -3,15 +3,23 @@ using System.Collections.Generic;
 using System.Formats.Cbor;
 using cborModular.DataIdentifiers;
 using cborModular.DataModels;
+using cborModular.Interfaces;
 
 namespace cborModular.Services
 {
-    internal static class CborHandler
+    internal class CborHandler
     {
-        public static byte[] EncodeRequest(MessageType messageType)
+        private readonly IDataService _dataService;
+
+        public CborHandler(IDataService dataService)
+        {
+            _dataService = dataService;
+        }
+
+        public byte[] EncodeRequest(MessageType messageType)
         {
             var writer = new CborWriter();
-            int sequenceNumber = DataStorage.IncrementSequenceNumber();
+            int sequenceNumber = _dataService.IncrementSequenceNumber();
    
             writer.WriteStartMap(2);
 
@@ -21,19 +29,19 @@ namespace cborModular.Services
             if (messageType == MessageType.Request)
             {
                 writer.WriteInt32((int)MessageType.Request); // Key for Request data
-                var identifiers = DataStorage.GetRequestedIdentifiers().ToList();
-                DataStorage.AddRequestRecord(sequenceNumber, identifiers.ToDictionary(id => id, id => (object)null), messageType);
+                var identifiers = _dataService.GetRequestedIdentifiers().ToList();
+                _dataService.AddRequestRecord(sequenceNumber, identifiers.ToDictionary(id => id, id => (object)null), messageType);
                 EncodeIdentifiers(writer, identifiers); // Encode only identifiers
-                DataStorage.ClearRequest();
+                _dataService.ClearRequest();
             }
             else if (messageType == MessageType.Set)
             {
                 writer.WriteInt32((int)MessageType.Set); // Key for Set data
-                var identifiers = DataStorage.GetSetIdentifiers().Cast<DataIdentifier>().ToList();
-                var values = DataStorage.GetSetValues();
-                DataStorage.AddRequestRecord(sequenceNumber, values, messageType);
+                var identifiers = _dataService.GetSetIdentifiers().Cast<DataIdentifier>().ToList();
+                var values = _dataService.GetSetValues();
+                _dataService.AddRequestRecord(sequenceNumber, values, messageType);
                 EncodeIdentifiersWithValues(writer, identifiers, values); // Encode identifiers with values
-                DataStorage.ClearSet();
+                _dataService.ClearSet();
             }
             else
             {
@@ -80,7 +88,7 @@ namespace cborModular.Services
                 default: throw new InvalidOperationException("Unsupported data type");
             }
         }
-        public static void DecodeResponse(byte[] cborData)
+        public void DecodeResponse(byte[] cborData)
         {
             var reader = new CborReader(cborData);
             reader.ReadStartMap();
@@ -115,7 +123,7 @@ namespace cborModular.Services
             reader.ReadEndMap();
 
             // Kontrola existence požadavku s tímto sekvenčním číslem
-            var requestRecord = DataStorage.GetRequestRecord(sequenceNumber);
+            var requestRecord = _dataService.GetRequestRecord(sequenceNumber);
             if (requestRecord == null)
             {
                 Console.WriteLine($"Warning: No matching request found for sequence number {sequenceNumber}. Discarding response.");
@@ -131,12 +139,12 @@ namespace cborModular.Services
             {
                 if (responseData.TryGetValue(identifier, out var value))
                 {
-                    DataStorage.AddData(identifier, value, requestTime);
+                    _dataService.AddData(identifier, value, requestTime);
                 }
             }
 
             // Odstranění požadavku z `requestRecords`
-            DataStorage.RemoveRequestRecord(sequenceNumber);
+            _dataService.RemoveRequestRecord(sequenceNumber);
         }
 
         public static (int sequenceNumber, MessageType messageType, Dictionary<DataIdentifier, object> data) DecodeRequest(byte[] cborData)
@@ -233,13 +241,14 @@ namespace cborModular.Services
             };
         }
 
-        public static byte[] EncodeResponse(int sequenceNumber, Dictionary<DataIdentifier, object> responseData)
+        public byte[] EncodeResponse(Dictionary<DataIdentifier, object> responseData)
         {
+            
             var writer = new CborWriter();
             writer.WriteStartMap(responseData.Count + 2);
 
             writer.WriteInt32((int)CborIdentifiers.SequenceNumber);
-            writer.WriteInt32(sequenceNumber);
+            writer.WriteInt32(_dataService.IncrementSequenceNumber());
 
             writer.WriteInt32((int)CborIdentifiers.Timestamp);
             writer.WriteInt64(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());

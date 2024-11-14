@@ -1,13 +1,11 @@
 ﻿namespace cborModular
 {
-    public partial class App : Microsoft.Maui.Controls.Application
+    public partial class App : Application
     {
         public App(MainPage mainPage)
         {
             InitializeComponent();
-            MainPage = mainPage;
-           // MainPage = new AppShell();          
-        }
-     
+            MainPage = mainPage;         
+        }     
     }
 }

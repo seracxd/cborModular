@@ -10,49 +10,118 @@ using cborModular.Services;
 using System.Collections.ObjectModel;
 using cborModular.Services.BluetoothServices;
 using Plugin.BLE.Abstractions.Contracts;
+using cborModular.Interfaces;
+using cborModular.Interfaces.Controlers;
 
 
 namespace cborModular
 {
     public partial class MainPage : ContentPage
     {
-        private readonly BleScanner _bleClient;
-        private readonly BleConnection _bleConnection;
+        private readonly IBluetoothService _bluetoothService;
+        private IDevice _selectedDevice;
+        private readonly ICharacteristic _selectedCharacteristic;
+        private readonly IDataService _dataService;
 
-        private  BleGetServices bleGetServices;
+        public ObservableCollection<IDevice> DiscoveredDevices { get; } = [];
 
-        public MainPage()
+
+        public MainPage(IBluetoothService bluetoothService, IDataService dataService )
         {
             InitializeComponent();
+            _bluetoothService = bluetoothService;
+            _dataService = dataService;
 
-            // Inicializace BLE skeneru
-            _bleClient = new BleScanner(Dispatcher);
-            _bleConnection = new BleConnection(_bleClient);
+            // Připojení událostí
+            _bluetoothService.DeviceConnected += OnDeviceConnected;
+            _bluetoothService.DeviceDisconnected += OnDeviceDisconnected;
+            _bluetoothService.NotificationReceived += OnNotificationReceived;
+            _bluetoothService.DeviceDiscovered += OnDeviceDiscovered;
+            DevicesListView.ItemsSource = DiscoveredDevices;
+        }
+        protected override async void OnDisappearing()
+        {
+            base.OnDisappearing();
 
+            // Zastaví skenování Bluetooth zařízení při opuštění stránky
+            await _bluetoothService.StopScanningAsync();
 
-            DevicesListView.ItemsSource = _bleClient.DiscoveredDevices;
+            // Odpojení od událostí
+            _bluetoothService.DeviceConnected -= OnDeviceConnected;
+            _bluetoothService.DeviceDisconnected -= OnDeviceDisconnected;
+            _bluetoothService.NotificationReceived -= OnNotificationReceived;
+            _bluetoothService.DeviceDiscovered -= OnDeviceDiscovered;
+        }
 
+        private void OnDeviceDiscovered(object sender, IDevice device)
+        {
+            // Aktualizace UI musí probíhat ve vlákně UI
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (!DiscoveredDevices.Contains(device))
+                {
+                    DiscoveredDevices.Add(device);                    
+                }
+            });
         }
 
         private async void OnStartScanningClicked(object sender, EventArgs e)
         {
-            await _bleClient.StartScanningAsync();
+            await _bluetoothService.StartScanningAsync();
         }
+
+        // Obsluha výběru zařízení
         private async void OnDeviceSelected(object sender, SelectedItemChangedEventArgs e)
         {
-            var selectedDevice = e.SelectedItem as IDevice;
-            if (selectedDevice != null)
+            _selectedDevice = e.SelectedItem as IDevice;
+            if (_selectedDevice != null)
             {
-                await _bleConnection.ConnectToDeviceAsync(selectedDevice);
-
-                bleGetServices = new BleGetServices(selectedDevice);
-
+                await _bluetoothService.ConnectToDeviceAsync(_selectedDevice);
             }
         }
+       
+        private async void OnSendRequestClicked(object sender, EventArgs e)
+        {
+            if (_selectedCharacteristic == null)
+            {
+                await DisplayAlert("Warning", "Please select a characteristic first.", "OK");
+                return;
+            }
 
-        private async void OnGetCharakteristicsClicked(object sender, EventArgs e)
-        {         
-            await bleGetServices.DisplayServicesAndCharacteristicsAsync();
+
+            _dataService.AddRequest(RequestDataIdentifier.Speed, RequestDataIdentifier.Throttle);
+
+            var cborHandler = new CborHandler(_dataService);
+            byte[] cborData = cborHandler.EncodeRequest(MessageType.Request);
+
+            await _bluetoothService.SendRequestAsync(_selectedCharacteristic, cborData);
         }
+
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+
+            // Zahájí skenování Bluetooth zařízení při zobrazení stránky
+            await _bluetoothService.StartScanningAsync();
+        }
+
+        // Metoda pro obsluhu připojení zařízení
+        private void OnDeviceConnected(object sender, IDevice device)
+        {
+            Console.WriteLine($"Device connected: {device.Name}");
+        }
+
+        // Metoda pro obsluhu odpojení zařízení
+        private void OnDeviceDisconnected(object sender, IDevice device)
+        {
+            Console.WriteLine($"Device disconnected: {device.Name}");
+        }
+
+        // Metoda pro obsluhu příchozí notifikace
+        private void OnNotificationReceived(object sender, byte[] data)
+        {
+            Console.WriteLine("Notification received: " + BitConverter.ToString(data));
+        }       
     }
 }

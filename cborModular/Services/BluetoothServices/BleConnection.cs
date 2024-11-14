@@ -12,6 +12,9 @@ namespace cborModular.Services.BluetoothServices
     {
         private readonly BleScanner _scanner;
         private IDevice _connectedDevice;
+        private readonly List<DeviceModel> _devices;
+
+
         private BleDeviceModel _connectedDeviceModel;
 
         public event EventHandler<IDevice> DeviceConnected;
@@ -22,7 +25,7 @@ namespace cborModular.Services.BluetoothServices
             _scanner = scanner;
             _scanner.Adapter.DeviceConnected += OnDeviceConnected;
             _scanner.Adapter.DeviceDisconnected += OnDeviceDisconnected;
-            _scanner.DiscoveredDevices.CollectionChanged += OnDeviceDiscovered;
+           // _scanner.DiscoveredDevices.CollectionChanged += OnDeviceDiscovered;
         }
 
         // Event handler volaný při připojení zařízení
@@ -31,13 +34,28 @@ namespace cborModular.Services.BluetoothServices
             try
             {
                 var device = e.Device;
+                var service = BleGetServices.GetServicesAsync(device).Result;
+                var characteristics = BleGetServices.GetCharacteristicsAsync(service).Result;
+
+                DeviceModel _device = new()
+                {
+                    Connected = true,
+                    Name = device.Name,
+                    Service = service,
+                    Characteristics = characteristics
+                };
+
+                _devices.Add(_device);
+
+
+
                 _connectedDeviceModel = InitializeDeviceModel(device);
 
                 // Načítání detailů o zařízení
                 await LoadDeviceDetailsAsync(device);
 
                 // Signalizace události připojení
-                DeviceConnected?.Invoke(this, device);              
+                DeviceConnected?.Invoke(this, device);
             }
             catch (Exception ex)
             {
@@ -58,7 +76,7 @@ namespace cborModular.Services.BluetoothServices
         }
 
         // Vytvoření a inicializace modelu zařízení
-        private BleDeviceModel InitializeDeviceModel(IDevice device)
+        private static BleDeviceModel InitializeDeviceModel(IDevice device)
         {
             return new BleDeviceModel
             {
@@ -93,7 +111,7 @@ namespace cborModular.Services.BluetoothServices
         }
 
         // Vytvoření modelu služby
-        private BluetoothServiceModel CreateServiceModel(IService service)
+        private static BluetoothServiceModel CreateServiceModel(IService service)
         {
             return new BluetoothServiceModel
             {
@@ -104,7 +122,7 @@ namespace cborModular.Services.BluetoothServices
         }
 
         // Načtení charakteristik pro službu
-        private async Task LoadCharacteristicsAsync(IService service, BluetoothServiceModel serviceModel)
+        private async static Task LoadCharacteristicsAsync(IService service, BluetoothServiceModel serviceModel)
         {
             var characteristics = await service.GetCharacteristicsAsync();
             foreach (var characteristic in characteristics)
@@ -117,7 +135,7 @@ namespace cborModular.Services.BluetoothServices
         }
 
         // Vytvoření modelu charakteristiky
-        private BluetoothCharacteristicModel CreateCharacteristicModel(ICharacteristic characteristic)
+        private static BluetoothCharacteristicModel CreateCharacteristicModel(ICharacteristic characteristic)
         {
             return new BluetoothCharacteristicModel
             {
@@ -127,7 +145,7 @@ namespace cborModular.Services.BluetoothServices
         }
 
         // Načtení deskriptorů pro charakteristiku
-        private async Task LoadDescriptorsAsync(ICharacteristic characteristic, BluetoothCharacteristicModel characteristicModel)
+        private async static Task LoadDescriptorsAsync(ICharacteristic characteristic, BluetoothCharacteristicModel characteristicModel)
         {
             var descriptors = await characteristic.GetDescriptorsAsync();
             foreach (var descriptor in descriptors)
@@ -137,6 +155,24 @@ namespace cborModular.Services.BluetoothServices
                     DescriptorId = descriptor.Id,
                     DescriptorName = descriptor.Name
                 };
+                // Check if the descriptor is the UserDescription descriptor (UUID 0x2901)
+                if (descriptor.Id == Guid.Parse("00002901-0000-1000-8000-00805f9b34fb"))
+                {
+                    try
+                    {
+                        var userDescription = await descriptor.ReadAsync();
+                        if (userDescription != null)
+                        {
+                            // Set the CharacteristicName to UserDescription if available
+                            characteristicModel.CharacteristicName = System.Text.Encoding.UTF8.GetString(userDescription);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error reading UserDescription: {ex.Message}");
+                    }
+                }
+
                 characteristicModel.Descriptors.Add(descriptorModel);
             }
         }
@@ -162,7 +198,7 @@ namespace cborModular.Services.BluetoothServices
         private async void OnDeviceDisconnected(object sender, DeviceEventArgs e)
         {
             if (e.Device.Id == _connectedDevice?.Id)
-            {              
+            {
                 DeviceDisconnected?.Invoke(this, e.Device);
                 await RetryConnectionAsync(e.Device);
             }
@@ -184,7 +220,7 @@ namespace cborModular.Services.BluetoothServices
                     await _scanner.Adapter.ConnectToDeviceAsync(device);
                     isConnected = true;
                     _connectedDevice = device;
-                    DeviceConnected?.Invoke(this, device);                 
+                    DeviceConnected?.Invoke(this, device);
                 }
                 catch
                 {

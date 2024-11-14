@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+/*
 namespace cborModular.Services
 {
     public class BluetoothSimulator
@@ -133,3 +133,4 @@ namespace cborModular.Services
 
     }
 }
+*/

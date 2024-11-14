@@ -16,7 +16,7 @@ namespace cborModular.DataModels
         private static readonly List<DataIdentifier> requestedIdentifiers = [];
         private static readonly List<SetDataIdentifier> setIdentifiers = [];
         private static readonly List<RequestRecord> requestRecords = [];
-
+        
 
 
 
@@ -102,7 +102,7 @@ namespace cborModular.DataModels
                 // Pro Request vytvoříme RequestRecord s identifikátory a bez hodnot
                 var identifiers = data.Keys.ToList();
                 requestRecord = new RequestRecord(
-                    messageType.ToString(),
+                    messageType,
                     sequenceNumber,
                     identifiers,
                     DateTimeOffset.UtcNow);
@@ -111,7 +111,7 @@ namespace cborModular.DataModels
             {
                 // Pro Set vytvoříme RequestRecord s identifikátory a hodnotami
                 requestRecord = new RequestRecord(
-                    messageType.ToString(),
+                    messageType,
                     sequenceNumber,
                     data,
                     DateTimeOffset.UtcNow);

@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace cborModular.DataModels
 {
-    internal class RequestRecord
+    public class RequestRecord
     {
-        public string MessageType { get; }  
+        public MessageType MessageType { get; }  
         public int SequenceNumber { get; }
         public List<DataIdentifier> DataIdentifiers { get; }
         // For set
         public Dictionary<DataIdentifier, object> Values { get; }
         public DateTimeOffset TimeOfRequest { get; }
 
-        public RequestRecord(string messageType, int sequenceNumber, List<DataIdentifier> dataIdentifiers, DateTimeOffset timeOfRequest)
+        public RequestRecord(MessageType messageType, int sequenceNumber, List<DataIdentifier> dataIdentifiers, DateTimeOffset timeOfRequest)
         {
             MessageType = messageType;
             SequenceNumber = sequenceNumber;
@@ -24,7 +24,7 @@ namespace cborModular.DataModels
             TimeOfRequest = timeOfRequest;
             Values = [];
         }
-        public RequestRecord(string messageType, int sequenceNumber, Dictionary<DataIdentifier, object> values, DateTimeOffset timeOfRequest)
+        public RequestRecord(MessageType messageType, int sequenceNumber, Dictionary<DataIdentifier, object> values, DateTimeOffset timeOfRequest)
         {
             MessageType = messageType;
             SequenceNumber = sequenceNumber;

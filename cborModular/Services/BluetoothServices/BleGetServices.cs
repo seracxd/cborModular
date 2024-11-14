@@ -1,4 +1,6 @@
-﻿using Plugin.BLE.Abstractions.Contracts;
+﻿using cborModular.DataIdentifiers;
+using cborModular.DataModels;
+using Plugin.BLE.Abstractions.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -7,55 +9,65 @@ namespace cborModular.Services.BluetoothServices
 {
     internal class BleGetServices
     {
-        private readonly IDevice _device;
-
-        public BleGetServices(IDevice device)
-        {
-            _device = device;
-        }
-
-        public async Task<List<IService>> GetServicesAsync()
+        public static async Task<IService> GetServicesAsync(IDevice device)
         {
             try
             {
-                var services = await _device.GetServicesAsync();
-                return services != null ? new List<IService>(services) : new List<IService>();
+                var services = await device.GetServicesAsync();
+                
+                if (services != null)
+                {
+                    foreach (var service in services)
+                    {
+                        // Použití ParseCustomGuid k ověření, zda je identifikátor služby typu "Service"
+                        var (identifier, isValid) = GuidServices.ParseCustomGuid(service.Id);
+                        if (isValid && identifier == BluetoothCharakteristicIdentifiers.Service)
+                        {
+                            return service;
+                        }
+                    }
+                }              
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error fetching services: {ex.Message}");
-                return new List<IService>();
-            }
+            catch{}
+
+            return null;
         }
 
-        public async Task<List<ICharacteristic>> GetCharacteristicsAsync(IService service)
+
+        public static async Task<List<CharacteristicInfo>> GetCharacteristicsAsync(IService service)
         {
             try
             {
                 var characteristics = await service.GetCharacteristicsAsync();
-                return characteristics != null ? new List<ICharacteristic>(characteristics) : new List<ICharacteristic>();
+                var characteristicInfos = new List<CharacteristicInfo>();
+
+                if (characteristics != null)
+                {
+                    foreach (var characteristic in characteristics)
+                    {
+                        var (characteristicType, isValid) = GuidServices.ParseCustomGuid(characteristic.Id);
+
+                        // Pokud je GUID platný a máme definovaný typ charakteristiky, použijeme jej
+                        var identifier = isValid && characteristicType.HasValue
+                            ? characteristicType.Value
+                            : BluetoothCharakteristicIdentifiers.Unknown; 
+
+                        characteristicInfos.Add(new CharacteristicInfo
+                        {
+                            Characteristic = characteristic,
+                            Identifier = identifier
+                        });
+                    }
+                }
+
+                return characteristicInfos;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error fetching characteristics: {ex.Message}");
-                return new List<ICharacteristic>();
+                return [];
             }
         }
 
-        public async Task DisplayServicesAndCharacteristicsAsync()
-        {
-            var services = await GetServicesAsync();
-            foreach (var service in services)
-            {
-                Console.WriteLine($"Service: {service.Id}");
-
-                var characteristics = await GetCharacteristicsAsync(service);
-                foreach (var characteristic in characteristics)
-                {
-                    Console.WriteLine($"  Characteristic: {characteristic.Id}");
-                    Console.WriteLine($"    Properties: {characteristic.Properties}");
-                }
-            }
-        }
     }
 }

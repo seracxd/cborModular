@@ -18,7 +18,7 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Button Text="Get Charakteristics" Clicked="OnGetCharakteristicsClicked"/>
+            <Button Text="Send Request" Clicked="OnSendRequestClicked" />
         </StackLayout>
     </ContentPage.Content>
 
