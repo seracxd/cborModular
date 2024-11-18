@@ -12,6 +12,8 @@ using cborModular.Services.BluetoothServices;
 using Plugin.BLE.Abstractions.Contracts;
 using cborModular.Interfaces;
 using cborModular.Interfaces.Controlers;
+using cborModular.LocalStorageSqLite;
+using Newtonsoft.Json;
 
 
 namespace cborModular
@@ -23,14 +25,19 @@ namespace cborModular
         //private readonly ICharacteristic _selectedCharacteristic;
         private readonly IDataService _dataService;
 
+
+        private readonly DatabaseSqlite _databaseSqlite;
+
         public ObservableCollection<IDevice> DiscoveredDevices { get; } = [];
 
 
-        public MainPage(IBluetoothService bluetoothService, IDataService dataService )
+        public MainPage(IBluetoothService bluetoothService, IDataService dataService, DatabaseSqlite databaseSqlite)
         {
             InitializeComponent();
             _bluetoothService = bluetoothService;
             _dataService = dataService;
+
+            _databaseSqlite = databaseSqlite;
 
             // Připojení událostí
             _bluetoothService.DeviceConnected += OnDeviceConnected;
@@ -82,20 +89,27 @@ namespace cborModular
        
         private async void OnSendRequestClicked(object sender, EventArgs e)
         {
-            _dataService.
-            if (_selectedCharacteristic == null)
-            {
-                await DisplayAlert("Warning", "Please select a characteristic first.", "OK");
+            var motorcycles = _databaseSqlite.GetAllMotorcycles();
+            if (motorcycles.Count == 0) {
+
+                await DisplayAlert("Warning", "Please connect to a bike first.", "OK");
                 return;
             }
-
+            var characteristics = JsonConvert.DeserializeObject<List<CharacteristicInfo>>(motorcycles.FirstOrDefault().CharacteristicsSerialized);   // momentálně pouze pro první motorku
+                               
+            var requestCharacteristic = characteristics.FirstOrDefault(c => c.Identifier == BluetoothCharakteristicIdentifiers.Read).Characteristic;
+            if (requestCharacteristic == null)
+            {
+                await DisplayAlert("Error", "Characteristic not found.", "OK");
+                return;
+            }
 
             _dataService.AddRequest(RequestDataIdentifier.Speed, RequestDataIdentifier.Throttle);
 
             var cborHandler = new CborHandler(_dataService);
             byte[] cborData = cborHandler.EncodeRequest(MessageType.Request);
 
-            await _bluetoothService.SendRequestAsync(_selectedCharacteristic, cborData);
+            await _bluetoothService.SendRequestAsync(requestCharacteristic, cborData);
         }
 
 

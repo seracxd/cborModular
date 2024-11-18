@@ -1,5 +1,6 @@
 ﻿using cborModular.DataModels;
 using cborModular.Interfaces;
+using cborModular.LocalStorageSqLite;
 using cborModular.Services.BluetoothServices;
 using Plugin.BLE.Abstractions.Contracts;
 using System;
@@ -16,9 +17,9 @@ namespace cborModular.Interfaces.Controlers
     {
         private readonly BleConnection _connection;
         private readonly BleScanner _scanner;
-        // private readonly BleGetServices _getServices;
+        private readonly BleGetServices _getServices;
         private readonly BleNotifications _notifications;
-        private readonly BleSendData _sendData;
+        private readonly BleSendData _sendData;       
 
 
         // Events
@@ -27,11 +28,11 @@ namespace cborModular.Interfaces.Controlers
         public event EventHandler<byte[]> NotificationReceived;
         public event EventHandler<IDevice> DeviceDiscovered;
 
-        public BluetoothControler()
+        public BluetoothControler(DatabaseSqlite databaseSqlite)
         {
             _scanner = new BleScanner();
-            _connection = new BleConnection(_scanner);       // Předání skeneru do BleConnection
-            //_getServices = new BleGetServices();             // Pokud je BleGetServices samostatný
+            _connection = new BleConnection(_scanner, databaseSqlite);       // Předání skeneru do BleConnection
+            _getServices = new BleGetServices();             // Pokud je BleGetServices samostatný
             _notifications = new BleNotifications();         // Pokud je BleNotifications samostatný
             _sendData = new BleSendData();
 
@@ -60,7 +61,7 @@ namespace cborModular.Interfaces.Controlers
         public Task SubscribeToNotificationsAsync(ICharacteristic characteristic) => _notifications.SubscribeToNotificationsAsync(characteristic);
         public Task UnsubscribeFromNotificationsAsync(ICharacteristic characteristic) => _notifications.UnsubscribeFromNotificationsAsync(characteristic);
 
-        // Data Sending
+        // Data Sending 
         public Task SendRequestAsync(ICharacteristic characteristic, byte[] data) => BleSendData.SendRequestAsync(characteristic, data);
     }
 }

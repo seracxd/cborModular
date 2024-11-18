@@ -4,6 +4,7 @@ using Plugin.BLE;
 using cborModular.Interfaces;
 using cborModular.Services.BluetoothServices;
 using cborModular.Interfaces.Controlers;
+using cborModular.LocalStorageSqLite;
 
 namespace cborModular
 {
@@ -30,6 +31,9 @@ namespace cborModular
         }
         private static void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<DatabaseSqlite>();
+
+
             // Registrace hlavní služby BluetoothService a závislostí
             services.AddSingleton<IBluetoothService, BluetoothControler>();
             services.AddSingleton<IDataService, DataControler>();

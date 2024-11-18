@@ -14,21 +14,22 @@ namespace cborModular.Services.BluetoothServices
             try
             {
                 var services = await device.GetServicesAsync();
-                
-                if (services != null)
+
+                if (services == null)
+                    return null;
+
+                foreach (var service in services)
                 {
-                    foreach (var service in services)
+                    // Použití ParseCustomGuid k ověření, zda je identifikátor služby typu "Service"
+                    var (identifier, isValid) = GuidServices.ParseCustomGuid(service.Id);
+                    if (isValid && identifier == BluetoothCharakteristicIdentifiers.Service)
                     {
-                        // Použití ParseCustomGuid k ověření, zda je identifikátor služby typu "Service"
-                        var (identifier, isValid) = GuidServices.ParseCustomGuid(service.Id);
-                        if (isValid && identifier == BluetoothCharakteristicIdentifiers.Service)
-                        {
-                            return service;
-                        }
+                        return service;
                     }
-                }              
+                }
+
             }
-            catch{}
+            catch { }
 
             return null;
         }
@@ -41,24 +42,25 @@ namespace cborModular.Services.BluetoothServices
                 var characteristics = await service.GetCharacteristicsAsync();
                 var characteristicInfos = new List<CharacteristicInfo>();
 
-                if (characteristics != null)
+                if (characteristics == null)
+                    return null;
+
+                foreach (var characteristic in characteristics)
                 {
-                    foreach (var characteristic in characteristics)
+                    var (characteristicType, isValid) = GuidServices.ParseCustomGuid(characteristic.Id);
+
+                    // Pokud je GUID platný a máme definovaný typ charakteristiky, použijeme jej
+                    var identifier = isValid && characteristicType.HasValue
+                        ? characteristicType.Value
+                        : BluetoothCharakteristicIdentifiers.Unknown;
+
+                    characteristicInfos.Add(new CharacteristicInfo
                     {
-                        var (characteristicType, isValid) = GuidServices.ParseCustomGuid(characteristic.Id);
-
-                        // Pokud je GUID platný a máme definovaný typ charakteristiky, použijeme jej
-                        var identifier = isValid && characteristicType.HasValue
-                            ? characteristicType.Value
-                            : BluetoothCharakteristicIdentifiers.Unknown; 
-
-                        characteristicInfos.Add(new CharacteristicInfo
-                        {
-                            Characteristic = characteristic,
-                            Identifier = identifier
-                        });
-                    }
+                        Characteristic = characteristic,
+                        Identifier = identifier
+                    });
                 }
+
 
                 return characteristicInfos;
             }

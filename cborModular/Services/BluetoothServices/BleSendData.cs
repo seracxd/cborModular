@@ -9,7 +9,7 @@ namespace cborModular.Services.BluetoothServices
 {
     internal class BleSendData
     {     
-        public BleSendData(){}
+       
 
         // Send a request to the server with data formatted in CBOR
         public static async Task SendRequestAsync(ICharacteristic characteristic, byte[] cborData)

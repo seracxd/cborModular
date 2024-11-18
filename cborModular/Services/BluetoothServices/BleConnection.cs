@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using cborModular.DataModels;
 using cborModular.DataStorage;
+using cborModular.LocalStorageSqLite;
+using Newtonsoft.Json;
 using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE.Abstractions.EventArgs;
@@ -13,15 +15,17 @@ namespace cborModular.Services.BluetoothServices
     {
         private readonly BleScanner _scanner;
         private IDevice _connectedDevice;
-        private readonly List<DeviceModel> _devices;
-        
+
+        private readonly DatabaseSqlite _databaseSqlite;
+
 
         public event EventHandler<IDevice> DeviceConnected;
         public event EventHandler<IDevice> DeviceDisconnected;
 
-        public BleConnection(BleScanner scanner)
+        public BleConnection(BleScanner scanner, DatabaseSqlite databaseSqlite)
         {
             _scanner = scanner;
+            _databaseSqlite = databaseSqlite;
             _scanner.Adapter.DeviceConnected += OnDeviceConnected;
             _scanner.Adapter.DeviceDisconnected += OnDeviceDisconnected;;
         }
@@ -35,17 +39,16 @@ namespace cborModular.Services.BluetoothServices
                 var service = BleGetServices.GetServicesAsync(device).Result;
                 var characteristics = BleGetServices.GetCharacteristicsAsync(service).Result;
 
-                DeviceModel _device = new()
+                MotorcycleModel model = new()
                 {
-                    Connected = true,
                     Name = device.Name,
-                    Service = service,
-                    Characteristics = characteristics
+                    Connected = true,
+                    ServiceSerialized = JsonConvert.SerializeObject(service),
+                    CharacteristicsSerialized = JsonConvert.SerializeObject(characteristics)
                 };
-
-                
-                _devices.Add(_device);
-
+            
+                _databaseSqlite.AddMotorcycle(model);
+             
                // Signalizace události připojení
                 DeviceConnected?.Invoke(this, device);
             }

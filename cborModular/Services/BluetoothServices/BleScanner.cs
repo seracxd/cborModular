@@ -16,7 +16,6 @@ namespace cborModular.Services.BluetoothServices
         public event EventHandler<IDevice> DeviceDiscovered;
 
         public IAdapter Adapter => _adapter;
-
         public IReadOnlyCollection<IDevice> DiscoveredDevices => _discoveredDevices;
 
         public BleScanner()
@@ -42,27 +41,30 @@ namespace cborModular.Services.BluetoothServices
             {
                 var device = e.Device;
 
-                if (device.AdvertisementRecords != null)
+                if (device.AdvertisementRecords == null)
+                    return;
+
+                foreach (var record in device.AdvertisementRecords)
                 {
-                    foreach (var record in device.AdvertisementRecords)
+                    if (record.Type != AdvertisementRecordType.UuidsComplete128Bit)
+                        return;
+
+                    byte[] bytes = record.Data;
+
+                    Guid id = GuidServices.ReverseGuidByteOrder(bytes);
+
+                    if (!GuidServices.ParseCustomGuid(id).isValid)
+                        return;
+
+                    if (!_discoveredDevices.Contains(device))
                     {
-                        if (record.Type == AdvertisementRecordType.UuidsComplete128Bit)
-                        {
-                            byte[] bytes = record.Data;
-
-                            Guid id = GuidServices.ReverseGuidByteOrder(bytes);
-
-                            if (GuidServices.ParseCustomGuid(id).isValid)
-                            {
-                                if (!_discoveredDevices.Contains(device))
-                                {
-                                    _discoveredDevices.Add(device);
-                                    DeviceDiscovered?.Invoke(this, device); // Oznámení, že nové zařízení bylo nalezeno
-                                }
-                            }
-                        }
+                        _discoveredDevices.Add(device);
+                        DeviceDiscovered?.Invoke(this, device); // Oznámení, že nové zařízení bylo nalezeno
                     }
+
+
                 }
+
             }
             finally
             {
