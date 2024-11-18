@@ -13,12 +13,14 @@ namespace cborModular.Interfaces.Controlers
     {
         private readonly RequestSetStorage _requestSetStorage;
         private readonly RequestStorage _requestStorage;
+        private readonly BleDeviceStorage _bleDeviceStorage;
 
         // Konstruktor fasády, kde se vytvářejí interní závislosti
         public DataControler()
-        {
+        {           
             _requestSetStorage = new RequestSetStorage();
             _requestStorage = new RequestStorage();
+            _bleDeviceStorage = new BleDeviceStorage();
         }
 
         // Implementace metod RequestSetStorage
@@ -68,5 +70,13 @@ namespace cborModular.Interfaces.Controlers
 
         public int IncrementSequenceNumber()
             => SequenceManager.IncrementSequenceNumber();
+
+
+        // iplementace pro BleDeviceStorage
+        public void AddBleDevice(DeviceModel device) => _bleDeviceStorage.AddBleDevice(device);
+        public void RemoveBleDevice(DeviceModel device)=> _bleDeviceStorage.RemoveBleDevice(device);
+        public DeviceModel GetConnectedModel() => _bleDeviceStorage.GetConnectedModel();
+        public void SetDeviceConnection(DeviceModel device, bool set = false)=>_bleDeviceStorage.SetDeviceConnection(device, set);
+
     }
 }

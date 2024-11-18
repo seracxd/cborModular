@@ -31,5 +31,11 @@ namespace cborModular.Interfaces
         // Metody pro SequenceManager
         int GetSequenceNumber();
         int IncrementSequenceNumber();
+
+        // Metody pro BleDeviceStorage
+         void AddBleDevice(DeviceModel device);
+         void RemoveBleDevice(DeviceModel device);
+         DeviceModel GetConnectedModel();
+         void SetDeviceConnection(DeviceModel device, bool set = false);
     }
 }

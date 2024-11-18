@@ -20,7 +20,7 @@ namespace cborModular
     {
         private readonly IBluetoothService _bluetoothService;
         private IDevice _selectedDevice;
-        private readonly ICharacteristic _selectedCharacteristic;
+        //private readonly ICharacteristic _selectedCharacteristic;
         private readonly IDataService _dataService;
 
         public ObservableCollection<IDevice> DiscoveredDevices { get; } = [];
@@ -82,6 +82,7 @@ namespace cborModular
        
         private async void OnSendRequestClicked(object sender, EventArgs e)
         {
+            _dataService.
             if (_selectedCharacteristic == null)
             {
                 await DisplayAlert("Warning", "Please select a characteristic first.", "OK");
