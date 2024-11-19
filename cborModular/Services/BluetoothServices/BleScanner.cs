@@ -47,14 +47,14 @@ namespace cborModular.Services.BluetoothServices
                 foreach (var record in device.AdvertisementRecords)
                 {
                     if (record.Type != AdvertisementRecordType.UuidsComplete128Bit)
-                        return;
+                        continue;
 
                     byte[] bytes = record.Data;
 
                     Guid id = GuidServices.ReverseGuidByteOrder(bytes);
 
                     if (!GuidServices.ParseCustomGuid(id).isValid)
-                        return;
+                        continue;
 
                     if (!_discoveredDevices.Contains(device))
                     {

@@ -113,13 +113,13 @@ namespace cborModular
         }
 
 
-        protected override async void OnAppearing()
-        {
-            base.OnAppearing();
+        //protected override async void OnAppearing()
+        //{
+        //    base.OnAppearing();
 
-            // Zahájí skenování Bluetooth zařízení při zobrazení stránky
-            await _bluetoothService.StartScanningAsync();
-        }
+        //    // Zahájí skenování Bluetooth zařízení při zobrazení stránky
+        //   // await _bluetoothService.StartScanningAsync();
+        //}
 
         // Metoda pro obsluhu připojení zařízení
         private void OnDeviceConnected(object sender, IDevice device)
